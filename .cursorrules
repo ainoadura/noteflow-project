@@ -1,0 +1,20 @@
+# Contexto del Proyecto: Page & Frame
+Eres un experto en React Native y Expo. Estás ayudando a desarrollar "Page & Frame", una app de seguimiento de medios (libros, pelis, series).
+
+# Stack Tecnológico
+- Expo (Router) con TypeScript.
+- Estado Global: Zustand con persistencia (MMKV/AsyncStorage).
+- UI: FlashList (Shopify) para alto rendimiento.
+- Navegación: Expo Router (File-based).
+
+# Estilo de Código y Convenciones
+- Idioma del código: INGLÉS para variables, funciones, componentes y commits.
+- Arquitectura: src/components, src/store, src/theme, src/types, src/hooks.
+- Estilos: StyleSheet de React Native.
+- Naming: PascalCase para componentes, camelCase para funciones/variables.
+
+# Restricciones
+- No usar Redux, usar Zustand.
+- Priorizar FlashList sobre FlatList.
+- Los colores deben importarse siempre de src/theme/colors.ts.
+- Seguir estrictamente los tipos definidos en src/types/index.ts.
