@@ -5,6 +5,10 @@ Una aplicación móvil moderna construida con **React Native** y **Expo** para g
 ## 📂 Documentación
 Consulta los detalles del proyecto en los siguientes documentos:
 - [Definición de la Idea](docs/idea.md): Concepto, usuarios y funcionalidades.
+- [Gestión del Proyecto](docs/project-management.md): Metodología y enlace al tablero de tareas.
+
+## 📋 Tablero de Trabajo
+Puedes seguir el progreso en tiempo real aquí: [Enlace a mi Trello](https://trello.com/invite/b/6a01af6815b98b29c282adfa/ATTIaccbbc0bf941684d94e39fc1cae8468724621184/noteflow-project)
 
 ## 🚀 Estado del Proyecto
 - [x] **Fase 1: Definición de la Idea** (Completado)
