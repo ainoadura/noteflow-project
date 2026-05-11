@@ -31,8 +31,19 @@ Page & Frame resuelve la fragmentación de las recomendaciones culturales. Permi
 - **Rendimiento:** Shopify FlashList
 - **Persistencia:** MMKV / AsyncStorage
 
+## ⚙️ Fundamentos Técnicos de React Native
+
+En el desarrollo de **Page & Frame**, tenemos en cuenta la arquitectura interna de React Native para asegurar el máximo rendimiento.
+
+### Hilos de ejecución
+1. **JavaScript Thread:** Donde reside nuestra lógica de negocio y estado (Zustand).
+2. **Main/UI Thread:** Donde el sistema operativo renderiza los componentes nativos.
+
+### Optimización
+Para evitar bloqueos en la interfaz (UI), utilizaremos **FlashList**, que optimiza la comunicación entre hilos mediante el reciclaje de vistas, permitiendo un desplazamiento fluido incluso con grandes volúmenes de datos.
+
+
 ## 📂 Estructura del Proyecto
 - `docs/`: Documentación del proyecto e ideas.
 - `app/`: Rutas principales de la aplicación (Expo Router).
 - `src/`: Código fuente incluyendo componentes, estados (store) y temas.
-
