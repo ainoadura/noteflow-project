@@ -42,6 +42,13 @@ En el desarrollo de **Page & Frame**, tenemos en cuenta la arquitectura interna 
 ### Optimización
 Para evitar bloqueos en la interfaz (UI), utilizaremos **FlashList**, que optimiza la comunicación entre hilos mediante el reciclaje de vistas, permitiendo un desplazamiento fluido incluso con grandes volúmenes de datos.
 
+## 🧰 Entorno de Desarrollo: Expo Go vs. Dev Builds
+
+Para la construcción de **Page & Frame**, es fundamental entender la diferencia entre los dos entornos de ejecución de Expo:
+
+- **Expo Go:** Es una aplicación pre-compilada que permite prototipar de forma inmediata escaneando un código QR. Es nuestra herramienta principal para el desarrollo ágil de la interfaz y la lógica.
+- **Development Builds:** Son binarios personalizados generados con **EAS (Expo Application Services)**. Se utilizan en proyectos profesionales cuando necesitamos incluir módulos nativos a medida (como sistemas de cámara avanzados o biometría) que no vienen por defecto en Expo Go.
+
 
 ## 📂 Estructura del Proyecto
 - `docs/`: Documentación del proyecto e ideas.
