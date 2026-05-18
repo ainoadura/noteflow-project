@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "noteflow-project",
+    "name": "Page & Frame",
     "slug": "noteflow-project",
     "version": "1.0.0",
+    "scheme": "pageandframe",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
