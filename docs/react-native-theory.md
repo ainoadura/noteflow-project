@@ -31,3 +31,19 @@ En la fase de arquitectura de **Page & Frame**, se evaluaron las dos soluciones 
 *   **Evitar Restricciones de Terceros:** React Native Paper obliga a la aplicación a adoptar de manera rígida las directrices estéticas de Material Design (Google). Esto colisiona con el objetivo de Page & Frame, el cual requiere una identidad de autor personalizada y diferenciada para sus secciones de entretenimiento.
 *   **Diseño Dinámico por Categorías:** Page & Frame se fundamenta en un sistema de color semántico (Rojo para Películas, Verde para Series, Amarillo para Libros). La naturaleza atómica y basada en propiedades utilitarias de Gluestack permite inyectar estilos y variantes dinámicas a las tarjetas y contenedores de datos de manera limpia, sin necesidad de sobrescribir componentes pesados.
 *   **Eficiencia en el Hilo de UI:** Gluestack está optimizado para procesar los tokens de estilo reduciendo la sobrecarga de cálculos en el *JavaScript Thread*, delegando el peso del renderizado al *UI Thread*, lo cual se traduce en un desplazamiento de listas más fluido y libre de latencia.
+
+## 5. Estrategia de Navegación en Page & Frame
+
+Para el desarrollo de la aplicación se ha implementado una arquitectura de navegación híbrida utilizando **Expo Router**. A continuación se detalla la justificación técnica de por qué combinamos pestañas (Tabs), pilas (Stack) y modales:
+
+### A. Navegación por Pestañas (Tabs Layout)
+*   **Qué es:** Una barra de acceso directo fija en la parte inferior de la pantalla.
+*   **Justificación en el proyecto:** Sirve como la navegación principal e identitaria de **Page & Frame**. Da acceso inmediato a las tres experiencias core del usuario (`/home` para las listas generales, `/add-content` para interactuar con la mediateca y `/ideas` para las anotaciones rápidas). Al ser vistas independientes que mantienen su propio historial, permiten al usuario saltar de una a otra de forma intuitiva sin perder el contexto.
+
+### B. Navegación por Pila (Stack Layout)
+*   **Qué es:** Un flujo lineal donde las pantallas se apilan una encima de otra (como un mazo de cartas). Para volver atrás, la pantalla superior se "desapila".
+*   **Justificación en el proyecto:** Es nuestro layout raíz. Lo utilizamos para la pantalla de detalle dinámico (`app/note/[id].tsx`). Cuando el usuario hace clic en una película o un libro concreto desde su pestaña de inicio, la aplicación introduce esa vista en la pila nativa empujando la interfaz hacia la izquierda. Esto es crucial para mantener la experiencia móvil nativa estándar (con el botón de retroceso integrado de iOS/Android).
+
+### C. Navegación por Modales (Modal Presentation)
+*   **Qué es:** Una pantalla que se desliza desde la parte inferior cubriendo temporalmente toda la interfaz para requerir la atención inmediata del usuario.
+*   **Justificación en el proyecto:** Implementado en la ruta `app/new-note.tsx`. Lo destinamos para procesos de creación rápidos e interrupciones lógicas (como registrar contenido de emergencia desde cualquier sección). El uso de un modal rompe visualmente con la navegación lineal del Stack, indicando al usuario que está realizando una acción transitoria; una vez completada o cancelada, el modal se desliza hacia abajo devolviendo el control exacto a la pantalla subyacente sin alterar los historiales de las pestañas principales.

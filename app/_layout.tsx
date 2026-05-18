@@ -22,7 +22,21 @@ export default function RootLayout() {
           },
         }}
       >
-        <Stack.Screen name="index" options={{ title: 'Page & Frame' }} />
+        {/* Main Tab Navigation group */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        
+        {/* Dynamic Detail route */}
+        <Stack.Screen name="note/[id]" options={{ title: 'Media Detail' }} />
+        
+        {/* Creation Modal route */}
+        <Stack.Screen 
+          name="new-note" 
+          options={{ 
+            title: 'Create New Content', 
+            presentation: 'modal',
+            animation: 'slide_from_bottom'
+          }} 
+        />
       </Stack>
     </GluestackUIProvider>
   );
