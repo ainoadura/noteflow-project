@@ -23,3 +23,11 @@ Su función principal es tomar todo tu árbol de archivos de código fuente, com
 
 *   **Código Nativo a Medida:** Expo Go contiene un conjunto de librerías nativas pre-seleccionadas. Si tu proyecto necesita una librería de terceros que requiera modificar el código nativo de iOS o Android (como sistemas avanzados de biometría, pasarelas de pago específicas, o widgets para la pantalla de inicio), Expo Go no la podrá ejecutar.
 *   **Tamaño y Control:** Expo Go incluye cientos de módulos que probablemente no uses (como mapas o sensores), haciendo que el entorno no sea idéntico al binario final. Un *Development Build* genera una versión personalizada con el código nativo exacto que tu aplicación necesita, garantizando que lo que pruebas en desarrollo sea un clon perfecto de lo que se subirá a las tiendas.
+
+## 4. Sistemas de Diseño: Justificación de Gluestack UI
+
+En la fase de arquitectura de **Page & Frame**, se evaluaron las dos soluciones de interfaz de usuario más utilizadas en el ecosistema de Expo: **React Native Paper** y **Gluestack UI**. Se ha determinado utilizar el enfoque adaptativo de Gluestack UI por los siguientes motivos técnicos:
+
+*   **Evitar Restricciones de Terceros:** React Native Paper obliga a la aplicación a adoptar de manera rígida las directrices estéticas de Material Design (Google). Esto colisiona con el objetivo de Page & Frame, el cual requiere una identidad de autor personalizada y diferenciada para sus secciones de entretenimiento.
+*   **Diseño Dinámico por Categorías:** Page & Frame se fundamenta en un sistema de color semántico (Rojo para Películas, Verde para Series, Amarillo para Libros). La naturaleza atómica y basada en propiedades utilitarias de Gluestack permite inyectar estilos y variantes dinámicas a las tarjetas y contenedores de datos de manera limpia, sin necesidad de sobrescribir componentes pesados.
+*   **Eficiencia en el Hilo de UI:** Gluestack está optimizado para procesar los tokens de estilo reduciendo la sobrecarga de cálculos en el *JavaScript Thread*, delegando el peso del renderizado al *UI Thread*, lo cual se traduce en un desplazamiento de listas más fluido y libre de latencia.
