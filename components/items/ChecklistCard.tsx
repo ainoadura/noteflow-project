@@ -1,6 +1,7 @@
 // components/items/ChecklistCard.tsx
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 import { ChecklistNote } from '../../src/types';
 import { useTheme } from '../../src/constants/theme';
 
@@ -19,33 +20,35 @@ export default function ChecklistCard({ note, onPress }: ChecklistCardProps) {
   const progressPercent = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
   return (
-    <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.surface, padding: spacing.m, marginBottom: spacing.s }]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: colors.text, fontSize: typography.sizes.m }]}>
-          {note.title}
-        </Text>
-        <Text style={[styles.counter, { color: colors.textSecondary, fontSize: typography.sizes.s }]}>
-          {completedItems}/{totalItems}
-        </Text>
-      </View>
+    <Animated.View entering={FadeInDown} exiting={FadeOutLeft}>
+      <TouchableOpacity
+        style={[styles.card, { backgroundColor: colors.surface, padding: spacing.m, marginBottom: spacing.s }]}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <View style={styles.headerRow}>
+          <Text style={[styles.title, { color: colors.text, fontSize: typography.sizes.m }]}>
+            {note.title}
+          </Text>
+          <Text style={[styles.counter, { color: colors.textSecondary, fontSize: typography.sizes.s }]}>
+            {completedItems}/{totalItems}
+          </Text>
+        </View>
 
-      {/* Progress Bar Container */}
-      <View style={[styles.progressTrack, { backgroundColor: colors.border, marginTop: spacing.s }]}>
-        <View 
-          style={[
-            styles.progressBar, 
-            { 
-              backgroundColor: colors.primary, 
-              width: `${progressPercent}%` 
-            }
-          ]} 
-        />
-      </View>
-    </TouchableOpacity>
+        {/* Progress Bar Container */}
+        <View style={[styles.progressTrack, { backgroundColor: colors.border, marginTop: spacing.s }]}>
+          <View 
+            style={[
+              styles.progressBar, 
+              { 
+                backgroundColor: colors.primary, 
+                width: `${progressPercent}%` 
+              }
+            ]} 
+          />
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
