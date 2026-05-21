@@ -87,3 +87,19 @@ Para el desarrollo del "cerebro de datos" de **Page & Frame**, se ha evaluado el
     1.  **Sin proveedores anidados:** No requiere envolver la aplicación en etiquetas `<Provider>` pesadas en el layout raíz, manteniendo el código limpio y modular.
     2.  **Rendimiento óptimo (Selectores estrictos):** Permite a cada pestaña suscribirse únicamente al fragmento de datos que necesita (ej: la pestaña `/ideas` solo escucha a `state.ideas`). Si el usuario añade una reseña de texto en la pestaña `/home`, las demás pantallas no sufren ningún *re-render* innecesario.
     3.  **Lógica inmutable y directa:** Permite despachar acciones directas (`addNote`, `toggleChecklistItem`) que actualizan el estado de forma inmediata y síncrona en memoria, garantizando una experiencia móvil fluida y una compatibilidad total con TypeScript.
+
+## 8. Rendimiento en Listas y Reciclaje de Componentes (Shopify FlashList)
+
+Para la visualización de las colecciones en las tres pestañas principales de **Page & Frame** (`/home`, `/add-content`, `/ideas`), se ha descartado el uso de listas tradicionales debido a problemas de optimización en volúmenes de datos densos, sustituyéndolas por `@shopify/flash-list`. A continuación se detalla la justificación técnica de este cambio y el funcionamiento del reciclaje de celdas:
+
+### A. El problema del scroll rápido y las pantallas en blanco
+*   **Mecanismo tradicional (`FlatList` / `ScrollView`):** Cuando un usuario hace scroll vertical a gran velocidad, el sistema se ve obligado a crear nuevos objetos e interfaces de forma continua en la memoria RAM, destruyendo al mismo tiempo las celdas que salen de la zona visible.
+*   **Impacto en el rendimiento:** Este proceso constante de "creación y destrucción" satura el hilo principal de JavaScript (*Bridge / Hermes UI thread*), provocando caídas drásticas de fotogramas (lag visual) y la aparición de molestos parches o pantallas en blanco mientras el dispositivo móvil intenta renderizar la interfaz a marchas forzadas.
+
+### B. La Solución: Reciclaje Agresivo de Celdas
+*   **Mecanismo de FlashList:** En lugar de destruir los componentes visuales que desaparecen por la parte superior de la pantalla, la librería de Shopify los mantiene vivos en memoria. Cuando un nuevo elemento de la lista va a aparecer por la parte inferior, FlashList **"recicla" la estructura física de la tarjeta vieja** y se limita a rellenarla con los nuevos datos (*re-hydration*).
+*   **Impacto en el rendimiento:** Al reutilizar los mismos elementos visuales una y otra vez (como las estructuras de `NoteCard`, `ChecklistCard` o `IdeaCard`), la carga de trabajo de la CPU se reduce prácticamente a cero durante el desplazamiento. Esto garantiza un scroll fluido a 60 FPS estables, eliminando por completo las pantallas en blanco sin importar el volumen de reseñas culturales almacenadas.
+
+### C. Importancia del Atributo `estimatedItemSize`
+*   **Propósito técnico:** La propiedad `estimatedItemSize` actúa como un plano arquitectónico previo para el compilador. Le indica a la lista, expresado en píxeles, el tamaño vertical aproximado que ocupará una tarjeta en la pantalla antes de que sea renderizada por primera vez.
+*   **Justificación de su precisión:** Cuanto más exacto sea este valor con respecto al diseño real del componente (ej: `90px` para reseñas de texto extendidas, `65px` para barras de progreso compactas), más eficientes serán los cálculos matemáticos que realiza el motor de renderizado. Esto permite reservar el espacio de pantalla de forma síncrona en el hilo nativo de iOS o Android, optimizando el rendimiento y logrando una fluidez óptima en el dispositivo.
