@@ -68,3 +68,22 @@ Para dar cumplimiento a los requisitos de tipado estricto y herencia del proyect
 Debido a que la aplicación utiliza el tipo de unión `AnyNote = Note | ChecklistNote | IdeaNote` para centralizar la gestión de datos, se han implementado funciones de control de tipo (*Type Guards*) estrictas utilizando predicados de tipo nativos (`note is ChecklistNote`). 
 
 Mediante el operador de evaluación `'items' in note`, la aplicación discrimina de forma síncrona en tiempo de ejecución con qué estructura está interactuando. Esto permite que componentes genéricos rendericen de forma segura interfaces totalmente diferentes (campos de texto, listados de verificación o cuadrículas de etiquetas) garantizando la total seguridad del tipado y evitando excepciones de puntero nulo en el dispositivo móvil.
+
+## 7. Gestión de Estado: Comparativa Técnica (useState vs Context API vs Zustand)
+
+Para el desarrollo del "cerebro de datos" de **Page & Frame**, se ha evaluado el uso de tres herramientas fundamentales de gestión de estado en el ecosistema de React Native. A continuación se justifica la elección de **Zustand** frente a las alternativas tradicionales:
+
+### A. Estado Local (`useState`)
+*   **Mecanismo:** Almacena la información de forma aislada dentro de un único componente. Para compartir datos con otros componentes, es necesario pasar el estado y sus funciones a través de propiedades (*prop drilling*).
+*   **Limitación en el proyecto:** Al tener tres pestañas independientes gestionadas por un enrutador de archivos (`/home`, `/add-content`, `/ideas`), es imposible usar `useState` para comunicar las notas entre pantallas de forma eficiente sin sobrecargar la raíz de la aplicación con un código denso y difícil de mantener.
+
+### B. Proveedores Globales (`Context API`)
+*   **Mecanismo:** Permite inyectar un estado global envolviendo la aplicación en un componente proveedor (`<Provider>`). Cualquier componente hijo puede suscribirse a ese contexto.
+*   **Limitación en el proyecto:** Context API no está optimizado para actuar como un almacén de datos de alta frecuencia. Cada vez que una propiedad cambia (por ejemplo, al marcar un elemento de un checklist como completado), **todos** los componentes envueltos por el proveedor se ven obligados a renderizarse de nuevo (*re-render* innecesario), degradando drásticamente el rendimiento y la fluidez de las animaciones nativas en dispositivos móviles.
+
+### C. Almacenes Atómicos (`Zustand`)
+*   **Mecanismo:** Crea un almacén (*store*) centralizado y externo al árbol de componentes de React, utilizando un patrón atómico basado en funciones inmutables puros (`.map` y `.filter`).
+*   **Justificación de su elección en Page & Frame:**
+    1.  **Sin proveedores anidados:** No requiere envolver la aplicación en etiquetas `<Provider>` pesadas en el layout raíz, manteniendo el código limpio y modular.
+    2.  **Rendimiento óptimo (Selectores estrictos):** Permite a cada pestaña suscribirse únicamente al fragmento de datos que necesita (ej: la pestaña `/ideas` solo escucha a `state.ideas`). Si el usuario añade una reseña de texto en la pestaña `/home`, las demás pantallas no sufren ningún *re-render* innecesario.
+    3.  **Lógica inmutable y directa:** Permite despachar acciones directas (`addNote`, `toggleChecklistItem`) que actualizan el estado de forma inmediata y síncrona en memoria, garantizando una experiencia móvil fluida y una compatibilidad total con TypeScript.
