@@ -1,6 +1,6 @@
 // app/(tabs)/home.tsx
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ListRenderItemInfo, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ListRenderItemInfo } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { useNotesStore } from '../../src/store/noteStore';
@@ -22,10 +22,8 @@ export default function HomeScreen() {
   const { notes, archivedIds } = useNotesStore();
   const { colors, spacing, typography } = useTheme();
   
-  // Real-time search query tracking local layout state
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter out archived elements and perform live text tracking matching criteria
   const activeNotes = notes.filter((n) => !archivedIds.includes(n.id));
   const filteredNotes = activeNotes.filter((n) => 
     n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -34,17 +32,28 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, padding: spacing.m }]}>
-      <Text style={[styles.title, { color: colors.primary, fontSize: typography.sizes.xl, marginBottom: spacing.xs }]}>
+      <Text style={[styles.title, { color: colors.primary, fontSize: typography.sizes.xl, marginBottom: spacing.s }]}>
         My Media Universe
       </Text>
 
-      {/* Global Search Header Input element block context */}
+      {/* Clean text input representation matching Android Java cast boundaries */}
       <TextInput
-        style={[styles.searchInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border, padding: spacing.s, marginBottom: spacing.m }]}
+        style={[
+          styles.searchInput, 
+          { 
+            backgroundColor: colors.surface, 
+            color: colors.text, 
+            borderColor: colors.border, 
+            paddingHorizontal: spacing.s,
+            marginBottom: spacing.m 
+          }
+        ]}
         placeholder="Search reviews by title or director..."
         placeholderTextColor={colors.textSecondary}
         value={searchQuery}
         onChangeText={setSearchQuery}
+        autoCapitalize="none"
+        autoCorrect={false}
       />
       
       <EvaluatedFlashList
@@ -52,7 +61,7 @@ export default function HomeScreen() {
         renderItem={({ item }: ListRenderItemInfo<Note>) => (
           <NoteCard 
             note={item} 
-            onPress={() => router.push(`/note/${item.id}`)} // Route navigation transition parameters matching specs
+            onPress={() => router.push(`/note/${item.id}`)}
           />
         )}
         estimatedItemSize={110}
@@ -72,6 +81,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   title: { fontWeight: 'bold' },
   subtitle: { textAlign: 'center' },
-  searchInput: { height: 42, borderRadius: 8, borderWidth: 1 },
+  searchInput: { height: 44, borderRadius: 8, borderWidth: 1 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 40 },
 });
