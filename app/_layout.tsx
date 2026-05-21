@@ -1,9 +1,9 @@
 // app/_layout.tsx
-// @ts-expect-error - Expo Router native bundle mapping handled by Metro
 import { Stack } from 'expo-router';
-import { GluestackUIProvider } from '../src/components/ui/gluestack-ui-provider';
+import { GluestackUIProvider } from '../components/ui/gluestack-ui-provider';
 import { useTheme } from '../src/constants/theme';
 import { StatusBar } from 'expo-status-bar';
+import '../global.css'; 
 
 export default function RootLayout() {
   const { colors } = useTheme();
@@ -22,13 +22,9 @@ export default function RootLayout() {
           },
         }}
       >
-        {/* Main Tab Navigation group */}
+        {/* Usamos el enrutado limpio nativo de las pestañas */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        
-        {/* Dynamic Detail route */}
         <Stack.Screen name="note/[id]" options={{ title: 'Media Detail' }} />
-        
-        {/* Creation Modal route */}
         <Stack.Screen 
           name="new-note" 
           options={{ 

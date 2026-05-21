@@ -47,3 +47,24 @@ Para el desarrollo de la aplicación se ha implementado una arquitectura de nave
 ### C. Navegación por Modales (Modal Presentation)
 *   **Qué es:** Una pantalla que se desliza desde la parte inferior cubriendo temporalmente toda la interfaz para requerir la atención inmediata del usuario.
 *   **Justificación en el proyecto:** Implementado en la ruta `app/new-note.tsx`. Lo destinamos para procesos de creación rápidos e interrupciones lógicas (como registrar contenido de emergencia desde cualquier sección). El uso de un modal rompe visualmente con la navegación lineal del Stack, indicando al usuario que está realizando una acción transitoria; una vez completada o cancelada, el modal se desliza hacia abajo devolviendo el control exacto a la pantalla subyacente sin alterar los historiales de las pestañas principales.
+
+## 6. Modelado de Datos y Tipado Estricto (TypeScript)
+
+Para dar cumplimiento a los requisitos de tipado estricto y herencia del proyecto, se han definido las interfaces de datos dentro de `src/types/index.ts`. A continuación se detalla cómo las estructuras técnicas requeridas (`Note`, `ChecklistNote` e `IdeaNote`) se integran con el propósito de las pestañas personalizadas de **Page & Frame**:
+
+### A. Estructura de Reseñas Culturales (`Note` ➔ `/home`)
+*   **Campos técnicos:** Hereda de `BaseNote` (`id`, `title`, `createdAt`, `updatedAt`) y añade `content: string`.
+*   **Justificación de uso:** Mapeado directamente con la pestaña principal de inicio (`/home`). El campo `content` se utiliza para almacenar de forma extensa las **reseñas, críticas y reflexiones literarias o cinematográficas** escritas por el usuario sobre sus libros, películas y series finalizadas.
+
+### B. Gestión de Progreso y Listas de Seguimiento (`ChecklistNote` ➔ `/add-content`)
+*   **Campos técnicos:** Hereda de `BaseNote` y añade un array de objetos estrictos `items: ChecklistItem[]` (con `id`, `text` e `isCompleted`).
+*   **Justificación de uso:** Mapeado con la pestaña interactiva `/add-content`. Se utiliza como un **cuaderno de bitácora o watchlist activa**. Permite al usuario desglosar una obra en tareas completables (por ejemplo, registrar los capítulos leídos de una novela o marcar los episodios vistos de una temporada de una serie) para llevar un control riguroso de su consumo cultural.
+
+### C. Captura Flotante de Recomendaciones (`IdeaNote` ➔ `/ideas`)
+*   **Campos técnicos:** Hereda de `BaseNote` y añade arrays de etiquetas (`tags: string[]`) y un identificador visual (`color: string`).
+*   **Justificación de uso:** Mapeado con la pestaña `/ideas`. Actúa como un espacio de **anotaciones rápidas y espontáneas**. Está diseñado para capturar recomendaciones efímeras recibidas en el día a día antes de que se conviertan en un post oficial de la biblioteca, permitiendo clasificarlas mediante etiquetas temáticas (ej: `#Pendiente`, `#JoyasOcultas`) y organizarlas visualmente por colores.
+
+### D. Discriminación en Tiempo de Ejecución (`Type Guards`)
+Debido a que la aplicación utiliza el tipo de unión `AnyNote = Note | ChecklistNote | IdeaNote` para centralizar la gestión de datos, se han implementado funciones de control de tipo (*Type Guards*) estrictas utilizando predicados de tipo nativos (`note is ChecklistNote`). 
+
+Mediante el operador de evaluación `'items' in note`, la aplicación discrimina de forma síncrona en tiempo de ejecución con qué estructura está interactuando. Esto permite que componentes genéricos rendericen de forma segura interfaces totalmente diferentes (campos de texto, listados de verificación o cuadrículas de etiquetas) garantizando la total seguridad del tipado y evitando excepciones de puntero nulo en el dispositivo móvil.

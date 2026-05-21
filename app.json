@@ -13,6 +13,9 @@
     "android": {
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
