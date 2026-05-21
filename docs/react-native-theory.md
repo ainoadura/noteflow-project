@@ -103,3 +103,54 @@ Para la visualización de las colecciones en las tres pestañas principales de *
 ### C. Importancia del Atributo `estimatedItemSize`
 *   **Propósito técnico:** La propiedad `estimatedItemSize` actúa como un plano arquitectónico previo para el compilador. Le indica a la lista, expresado en píxeles, el tamaño vertical aproximado que ocupará una tarjeta en la pantalla antes de que sea renderizada por primera vez.
 *   **Justificación de su precisión:** Cuanto más exacto sea este valor con respecto al diseño real del componente (ej: `90px` para reseñas de texto extendidas, `65px` para barras de progreso compactas), más eficientes serán los cálculos matemáticos que realiza el motor de renderizado. Esto permite reservar el espacio de pantalla de forma síncrona en el hilo nativo de iOS o Android, optimizando el rendimiento y logrando una fluidez óptima en el dispositivo.
+
+## 9. Persistencia de Datos en Almacenamiento Local (AsyncStorage)
+
+Para garantizar la retención de los datos registrados en **Page & Frame** al cerrar o reiniciar la aplicación, se ha integrado el módulo `@react-native-async-storage/async-storage` acoplado directamente al estado global de Zustand mediante su middleware nativo de persistencia. A continuación se detallan las limitaciones técnicas evaluadas sobre esta arquitectura:
+
+### A. Ausencia de Cifrado Nativo (Seguridad)
+*   **Análisis:** AsyncStorage almacena la información en un formato de texto plano (clave-valor) sin ningún tipo de encriptación criptográfica en el sistema de archivos del dispositivo. 
+*   **Impacto en Page & Frame:** Al ser una aplicación destinada a la catalogación cultural pública de libros, series y reseñas de películas, no maneja datos sensibles (como contraseñas, tokens bancarios o datos médicos). Por tanto, AsyncStorage es una solución idónea por su ligereza, pero se desaconseja su uso para almacenar credenciales críticas de usuario sin un módulo complementario de *Secure Store*.
+
+### B. Límite de Tamaño de Almacenamiento (Capacidad)
+*   **Análisis:** Por defecto, la base de datos de AsyncStorage tiene una restricción de tamaño máxima (aproximadamente 6 MB en sistemas Android).
+*   **Impacto en Page & Frame:** Dado que guardamos datos puramente textuales y estructurales indexados (strings de títulos, críticas y booleanos de progreso), el consumo en disco es mínimo. La aplicación puede albergar miles de registros antes de aproximarse al límite físico, garantizando un ciclo de vida extenso antes de requerir una migración a bases de datos relacionales SQLite.
+
+### C. Almacenamiento Aislado Local (Dispositivo)
+*   **Análisis:** Los datos persisten única y exclusivamente en el almacenamiento físico local del terminal móvil donde se ejecuta la app.
+*   **Impacto en Page & Frame:** No existe sincronización automática en la nube de forma nativa. Si el usuario desinstala la aplicación o cambia de teléfono, el catálogo cultural se perderá. Esta limitación es propia de la arquitectura sin servidor (*serverless local*), ideal para entornos académicos pero que marca la hoja de ruta para implementar un backend dedicado en futuras fases comerciales.
+
+## 10. Proceso de Rehidratación y Control de Carga Síncrona
+
+Al utilizar el middleware `persist` de Zustand combinado con `@react-native-async-storage/async-storage`, se activa un ciclo de vida crítico al iniciar la aplicación conocido como **rehidratación**:
+
+### A. ¿Qué ocurre durante la rehidratación del Store?
+1.  **Lectura en Disco (Asíncrona):** Nada más abrir **Page & Frame**, el hilo de ejecución de Zustand lanza una petición asíncrona al sistema de archivos local del dispositivo móvil para leer la clave `'noteflow-storage'`.
+2.  **Conversión de Datos (De-serialización):** El texto plano recuperado de `AsyncStorage` se parsea mediante `JSON.parse` para recuperar sus tipos de datos estructurados nativos.
+3.  **Hidratación en Memoria:** Zustand inyecta de golpe esos datos recuperados en las variables reactivas (`notes`, `checklists`, `ideas`), notificando a los componentes suscritos que ya pueden renderizar el catálogo cultural guardado.
+
+### B. Control del Indicador de Carga mediante `useNotesStore.persist.hasHydrated`
+Debido a que la lectura en disco toma unos milisegundos, intentar pintar las listas de alto rendimiento (`FlashList`) antes de finalizar la rehidratación puede provocar parpadeos visuales desagradables o lecturas de arrays vacíos erróneas. 
+
+Para resolverlo siguiendo las buenas prácticas de React Native, se utiliza el método nativo de Zustand **`useNotesStore.persist.hasHydrated()`** (un hook reactivo que devuelve `false` mientras lee el disco y `true` cuando termina). Mientras el estado sea `false`, la aplicación interrumpe el flujo normal y muestra un indicador de carga nativo (`ActivityIndicator`) bloqueando la interfaz de forma elegante:
+
+```tsx
+import React from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { useNotesStore } from '../src/store/noteStore';
+
+export default function AppGuard() {
+  // Use the official reactive method to track store hydration status
+  const hasHydrated = useNotesStore((state) => state._hasHydrated); 
+  // O mediante el método de escucha directa en el layout principal:
+  // const hasHydrated = useNotesStore.persist.hasHydrated();
+
+  if (!hasHydrated) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0284C7" />
+      </View>
+    );
+  }
+}
+```
