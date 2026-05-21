@@ -22,15 +22,13 @@ export default function RootLayout() {
           },
         }}
       >
-        {/* Usamos el enrutado limpio nativo de las pestañas */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="note/[id]" options={{ title: 'Media Detail' }} />
         <Stack.Screen 
           name="new-note" 
           options={{ 
             title: 'Create New Content', 
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
+            presentation: 'modal'
           }} 
         />
       </Stack>
