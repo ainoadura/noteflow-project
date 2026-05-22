@@ -1,6 +1,7 @@
 // app/(tabs)/ideas.tsx
 import React from 'react';
 import { View, Text, StyleSheet, ListRenderItemInfo } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNotesStore } from '../../src/store/noteStore';
 import { useTheme } from '../../src/constants/theme';
@@ -21,26 +22,34 @@ export default function IdeasScreen() {
   const { colors, spacing, typography } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, padding: spacing.m }]}>
-      <Text style={[styles.title, { color: colors.primary, fontSize: typography.sizes.xl, marginBottom: spacing.m }]}>
-        Quick Ideas & Quotes
-      </Text>
-      <EvaluatedIdeaList
-        data={ideas}
-        renderItem={({ item }: ListRenderItemInfo<IdeaNote>) => <IdeaCard note={item} />}
-        estimatedItemSize={75} // Strict cell layout budget target sizing
-        ListEmptyComponent={
-          <Text style={[styles.subtitle, { color: colors.textSecondary, textAlign: 'center', marginTop: 40 }]}>
-            No quick recommendations captured.
-          </Text>
-        }
-      />
-    </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      <View style={{ paddingHorizontal: spacing.m }}>
+        <Text style={[styles.title, { color: colors.primary, fontSize: typography.sizes.xl, marginBottom: spacing.xs }]}>
+          Page & Frame
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary, marginBottom: spacing.m }]}>
+          Quick recommendations, recommendations and brainstorms
+        </Text>
+      </View>
+      
+      <View style={{ flex: 1, paddingHorizontal: spacing.m }}>
+        <EvaluatedIdeaList
+          data={ideas}
+          renderItem={({ item }: ListRenderItemInfo<IdeaNote>) => <IdeaCard note={item} />}
+          estimatedItemSize={75}
+          ListEmptyComponent={
+            <Text style={[styles.subtitle, { color: colors.textSecondary, textAlign: 'center', marginTop: 40 }]}>
+              No quick recommendations captured.
+            </Text>
+          }
+        />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   title: { fontWeight: 'bold' },
-  subtitle: { textAlign: 'center' },
+  subtitle: { fontSize: 13 },
 });

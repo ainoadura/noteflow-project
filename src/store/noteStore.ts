@@ -3,18 +3,26 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
-import { Note, ChecklistNote, IdeaNote } from '../types';
+import { Note, ChecklistNote, IdeaNote, CustomMediaList } from '../types';
 
 interface NotesStore {
   notes: Note[];
   checklists: ChecklistNote[];
   ideas: IdeaNote[];
   archivedIds: string[];
+  lists: CustomMediaList[]; // Track playlists structurally supporting creation on the fly
   addNote: (note: Note) => void;
   deleteNote: (id: string) => void;
   toggleArchiveNote: (id: string) => void;
   toggleChecklistItem: (checklistId: string, itemId: string) => void;
+  createCustomList: (name: string) => string; // Returns the generated ID instantly
 }
+
+const defaultLists: CustomMediaList[] = [
+  { id: 'list-all', name: 'General Library', isDefault: true },
+  { id: 'list-favs', name: 'Favorites Collection', isDefault: true },
+  { id: 'list-pending', name: 'Pending Watchlist', isDefault: true },
+];
 
 export const useNotesStore = create<NotesStore>()(
   persist(
@@ -23,6 +31,7 @@ export const useNotesStore = create<NotesStore>()(
       checklists: [],
       ideas: [],
       archivedIds: [],
+      lists: defaultLists, // Set up the default lists matrix array elements mapping
       
       addNote: (note) => set((state) => ({ 
         notes: [note, ...state.notes] 
@@ -53,7 +62,6 @@ export const useNotesStore = create<NotesStore>()(
             i.id === itemId ? { ...i, isCompleted: !i.isCompleted } : i
           );
 
-          // Check if all criteria objects are marked true following the execution rule
           const total = updatedItems.length;
           const completed = updatedItems.filter((i) => i.isCompleted).length;
           if (total > 0 && completed === total) {
@@ -63,13 +71,21 @@ export const useNotesStore = create<NotesStore>()(
           return { ...c, items: updatedItems };
         });
 
-        // Trigger native notification feedback asynchronously upon success conditions
         if (isNowFullyCompleted) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
         }
 
         return { checklists: updatedChecklists };
       }),
+
+      // Add custom functional criteria mapping to register new lists in place
+      createCustomList: (name) => {
+        const newId = `list-${Date.now()}`;
+        set((state) => ({
+          lists: [...state.lists, { id: newId, name, isDefault: false }]
+        }));
+        return newId; // Returns identifier to select it in the dropdown immediately
+      }
     }),
     {
       name: 'noteflow-storage',

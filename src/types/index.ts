@@ -13,12 +13,16 @@ export interface BaseNote {
   updatedAt: Date;
 }
 
-// Extended to support real movie/book metadata criteria for Page & Frame
+// 1. Extended strictly to support your dropdown categories inside the academic Note type
+export type MediaCategory = 'movie' | 'tv-show' | 'book';
+
 export interface Note extends BaseNote {
   content: string;
-  creatorName?: string;    // Author for books, Director for movies
-  rating?: number;         // Score from 1 to 5 stars
-  durationOrPages?: string; // e.g., "120 min" or "350 pages"
+  category?: MediaCategory;     // 'movie' | 'tv-show' | 'book'
+  creatorName?: string;         // Director for movies/series, Author for books
+  durationOrPages?: string;     // e.g., "148 min", "10 episodes" or "400 pages"
+  rating?: number;              // 1 to 5 stars
+  listId?: string;              // Connects this post to a specific custom playlist container
 }
 
 export interface ChecklistNote extends BaseNote {
@@ -28,6 +32,13 @@ export interface ChecklistNote extends BaseNote {
 export interface IdeaNote extends BaseNote {
   tags: string[];
   color: string;
+}
+
+// 2. Structural Custom Playlists supporting creation on the fly
+export interface CustomMediaList {
+  id: string;
+  name: string;
+  isDefault: boolean;
 }
 
 export type AnyNote = Note | ChecklistNote | IdeaNote;

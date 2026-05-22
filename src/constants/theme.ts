@@ -1,6 +1,6 @@
+// src/constants/theme.ts
 import { useColorScheme } from 'react-native';
 
-// Design Tokens: Spacing Scale (Multiples of 4/8)
 export const spacing = {
   xs: 4,
   s: 8,
@@ -9,7 +9,6 @@ export const spacing = {
   xl: 32,
 };
 
-// Design Tokens: Typography Scale
 export const typography = {
   sizes: {
     xs: 12,
@@ -26,7 +25,6 @@ export const typography = {
   },
 };
 
-// Design Tokens: Border Radius
 export const borderRadius = {
   s: 4,
   m: 8,
@@ -34,37 +32,40 @@ export const borderRadius = {
   full: 9999,
 };
 
-// Semantic Category Colors (Universal for both themes)
+// Enhanced brand categorization category colors
 export const categoryColors = {
-  books: '#FBC02D',   // Amarillo temporal
-  movies: '#E53935',  // Rojo temporal
-  series: '#43A047',  // Verde temporal
+  books: '#F59E0B',   // Elegant Amber Gold for literature core
+  movies: '#EF4444',  // Cinematic Premium Crimson Red
+  series: '#10B981',  // Emerald Modern Green
   star: '#FFB300',
 };
 
-// Theme Palettes (Light vs Dark)
-const lightPalette = {
-  primary: '#1A1A1A',
-  background: '#FFFFFF',
-  surface: '#F5F5F5',
-  text: '#212121',
-  textSecondary: '#757575',
-  border: '#EEEEEE',
-};
-
+// 🎨 REDISEÑO: Paleta Oscura e Inmersiva por Defecto para Page & Frame
 const darkPalette = {
-  primary: '#FFFFFF',
-  background: '#121212',
-  surface: '#1E1E1E',
-  text: '#E0E0E0',
-  textSecondary: '#A0A0A0',
-  border: '#2C2C2C',
+  primary: '#F59E0B',       // Golden Amber for highlights and key elements
+  background: '#121212',    // Deep cinematic midnight background
+  surface: '#1E1E1E',       // Smooth anthracite container card fill
+  text: '#FFFFFF',          // Pure crisp white for readable titles
+  textSecondary: '#9CA3AF', // Light silver gray for metadata details
+  border: '#2D2D2D',        // Subdued elegant outline borders
 };
 
-// Custom Hook to dynamically get the active theme tokens
+// Fallback light theme with sleek design adjustments
+const lightPalette = {
+  primary: '#D97706',
+  background: '#FAFAFA',
+  surface: '#FFFFFF',
+  text: '#1F2937',
+  textSecondary: '#4B5563',
+  border: '#E5E7EB',
+};
+
 export function useTheme() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  
+  // For validation and assignment phase, we enforce the dark mode layout directly
+  // Change to 'isDark = colorScheme === "dark"' later if system mirroring is required
+  const isDark = true; 
   const colors = isDark ? darkPalette : lightPalette;
 
   return {
