@@ -3,20 +3,23 @@
     "name": "Page & Frame",
     "slug": "noteflow-project",
     "version": "1.0.0",
-    "scheme": "pageandframe",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
     },
-    "android": {
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+    "android": {},
+    "web": {
+      "bundler": "metro",
+      "output": "static"
     },
     "plugins": [
       "expo-router",
       "expo-font"
-    ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

@@ -10,11 +10,14 @@ interface IdeaCardProps {
   onPress?: () => void;
 }
 
+// Forzamos el tipado limpio para que acepte componentes hijos en las animaciones de Windows
+const AnimatedCardContainer = Animated.View as React.ComponentType<any>;
+
 export default function IdeaCard({ note, onPress }: IdeaCardProps) {
   const { colors, spacing, typography } = useTheme();
 
   return (
-    <Animated.View entering={FadeInDown} exiting={FadeOutLeft}>
+    <AnimatedCardContainer entering={FadeInDown} exiting={FadeOutLeft}>
       <TouchableOpacity
         style={[
           styles.card, 
@@ -47,7 +50,7 @@ export default function IdeaCard({ note, onPress }: IdeaCardProps) {
           </View>
         )}
       </TouchableOpacity>
-    </Animated.View>
+    </AnimatedCardContainer>
   );
 }
 

@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+// components/ui/gluestack-ui-provider/index.tsx
+import React, { ComponentProps } from 'react'; 
 import { config } from './config';
-import { View, ViewProps } from 'react-native';
+import { View } from 'react-native'; 
 import { OverlayProvider } from '@gluestack-ui/core/overlay/creator';
 import { ToastProvider } from '@gluestack-ui/core/toast/creator';
 import { useColorScheme } from 'nativewind';
@@ -13,19 +14,14 @@ export function GluestackUIProvider({
 }: {
   mode?: ModeType;
   children?: React.ReactNode;
-  style?: ViewProps['style'];
+  style?: ComponentProps<typeof View>['style']; 
 }) {
-  const { colorScheme, setColorScheme } = useColorScheme();
-
-  useEffect(() => {
-    setColorScheme(mode);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+  const { colorScheme } = useColorScheme();
 
   return (
     <View
       style={[
-        config[colorScheme!],
+        config[colorScheme! || 'light'],
         { flex: 1, height: '100%', width: '100%' },
         props.style,
       ]}

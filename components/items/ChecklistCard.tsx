@@ -1,7 +1,7 @@
 // components/items/ChecklistCard.tsx
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
+import { View, Text, StyleSheet, TouchableOpacity, ViewProps } from 'react-native';
+import Animated, { FadeInDown, FadeOutLeft, AnimateProps } from 'react-native-reanimated';
 import { ChecklistNote } from '../../src/types';
 import { useTheme } from '../../src/constants/theme';
 
@@ -10,17 +10,17 @@ interface ChecklistCardProps {
   onPress?: () => void;
 }
 
+const AnimatedCardContainer = Animated.View as React.ComponentType<any>;
+
 export default function ChecklistCard({ note, onPress }: ChecklistCardProps) {
   const { colors, spacing, typography } = useTheme();
 
   const totalItems = note.items.length;
   const completedItems = note.items.filter(i => i.isCompleted).length;
-  
-  // Calculate strict progress percentage avoiding division by zero
   const progressPercent = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
   return (
-    <Animated.View entering={FadeInDown} exiting={FadeOutLeft}>
+    <AnimatedCardContainer entering={FadeInDown} exiting={FadeOutLeft}>
       <TouchableOpacity
         style={[styles.card, { backgroundColor: colors.surface, padding: spacing.m, marginBottom: spacing.s }]}
         onPress={onPress}
@@ -48,7 +48,7 @@ export default function ChecklistCard({ note, onPress }: ChecklistCardProps) {
           />
         </View>
       </TouchableOpacity>
-    </Animated.View>
+    </AnimatedCardContainer>
   );
 }
 

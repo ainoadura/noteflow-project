@@ -10,12 +10,15 @@ interface NoteCardProps {
   onPress?: () => void;
 }
 
+// Forzamos el tipado limpio para que acepte componentes hijos en las animaciones de Windows
+const AnimatedCardContainer = Animated.View as React.ComponentType<any>;
+
 export default function NoteCard({ note, onPress }: NoteCardProps) {
   const { colors, spacing, typography } = useTheme();
   const formattedDate = new Date(note.createdAt).toLocaleDateString();
 
   return (
-    <Animated.View entering={FadeInDown} exiting={FadeOutLeft}>
+    <AnimatedCardContainer entering={FadeInDown} exiting={FadeOutLeft}>
       <TouchableOpacity
         style={[styles.card, { backgroundColor: colors.surface, padding: spacing.m, marginBottom: spacing.s }]}
         onPress={onPress}
@@ -34,7 +37,7 @@ export default function NoteCard({ note, onPress }: NoteCardProps) {
           {formattedDate}
         </Text>
       </TouchableOpacity>
-    </Animated.View>
+    </AnimatedCardContainer>
   );
 }
 

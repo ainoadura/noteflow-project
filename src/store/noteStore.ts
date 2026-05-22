@@ -10,12 +10,13 @@ interface NotesStore {
   checklists: ChecklistNote[];
   ideas: IdeaNote[];
   archivedIds: string[];
-  lists: CustomMediaList[]; // Track playlists structurally supporting creation on the fly
+  lists: CustomMediaList[]; 
   addNote: (note: Note) => void;
   deleteNote: (id: string) => void;
   toggleArchiveNote: (id: string) => void;
   toggleChecklistItem: (checklistId: string, itemId: string) => void;
-  createCustomList: (name: string) => string; // Returns the generated ID instantly
+  createCustomList: (name: string) => string; 
+  deleteCustomList: (id: string) => void; // <-- NUEVA ACCIÓN REGISTRADA
 }
 
 const defaultLists: CustomMediaList[] = [
@@ -31,7 +32,7 @@ export const useNotesStore = create<NotesStore>()(
       checklists: [],
       ideas: [],
       archivedIds: [],
-      lists: defaultLists, // Set up the default lists matrix array elements mapping
+      lists: defaultLists,
       
       addNote: (note) => set((state) => ({ 
         notes: [note, ...state.notes] 
@@ -78,14 +79,28 @@ export const useNotesStore = create<NotesStore>()(
         return { checklists: updatedChecklists };
       }),
 
-      // Add custom functional criteria mapping to register new lists in place
       createCustomList: (name) => {
         const newId = `list-${Date.now()}`;
         set((state) => ({
           lists: [...state.lists, { id: newId, name, isDefault: false }]
         }));
-        return newId; // Returns identifier to select it in the dropdown immediately
-      }
+        return newId; 
+      },
+
+      // Lógica de borrado seguro para evitar registros huérfanos
+      deleteCustomList: (id) => set((state) => {
+        // Bloqueamos el borrado de la lista General ('list-all') para que siempre exista al menos un contenedor base
+        if (id === 'list-all') return {};
+
+        return {
+          // Eliminamos la playlist elegida de la matriz de colecciones
+          lists: state.lists.filter((l) => l.id !== id),
+          // Buscamos las notas asociadas a esa lista destruida y las movemos a General Library de forma automática
+          notes: state.notes.map((n) => 
+            n.listId === id ? { ...n, listId: 'list-all' } : n
+          )
+        };
+      })
     }),
     {
       name: 'noteflow-storage',

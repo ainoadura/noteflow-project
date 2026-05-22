@@ -8,9 +8,9 @@ import {
   TouchableOpacity, 
   ScrollView, 
   KeyboardAvoidingView, 
-  Platform 
+  Platform,
+  SafeAreaView
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotesStore } from '../../src/store/noteStore';
 import { useTheme } from '../../src/constants/theme';
 import { MediaCategory, Note } from '../../src/types';
@@ -68,7 +68,7 @@ export default function AddContentScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ padding: spacing.m }} showsVerticalScrollIndicator={false}>
           
