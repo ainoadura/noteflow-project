@@ -1,5 +1,4 @@
 // src/types/index.ts
-
 export interface ChecklistItem {
   id: string;
   text: string;
@@ -9,17 +8,15 @@ export interface ChecklistItem {
 export interface BaseNote {
   id: string;
   title: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string; 
+  updatedAt: Date | string; 
 }
 
-// Añadimos el tipo de categorías que usa tu formulario dinámico
 export type MediaCategory = 'movie' | 'tv-show' | 'book';
 
-// Extended strictly to support real movie/book metadata criteria for Page & Frame
 export interface Note extends BaseNote {
   content: string;
-  category?: MediaCategory;    // <-- LA HACEMOS LEGAL AQUÍ COMO OPCIONAL
+  category?: MediaCategory;    
   creatorName?: string;         // Author for books, Director for movies
   rating?: number;              // Score from 1 to 5 stars
   durationOrPages?: string;     // e.g., "120 min" or "350 pages"
@@ -30,12 +27,13 @@ export interface ChecklistNote extends BaseNote {
   items: ChecklistItem[];
 }
 
-export interface IdeaNote extends BaseNote {
+export interface CoreIdeaNote {
   tags: string[];
   color: string;
 }
 
-// Añadimos la interfaz de tus listas personalizadas
+export interface IdeaNote extends BaseNote, CoreIdeaNote {}
+
 export interface CustomMediaList {
   id: string;
   name: string;

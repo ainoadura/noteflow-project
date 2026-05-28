@@ -1,10 +1,8 @@
 // components/ui/gluestack-ui-provider/index.tsx
 import React, { ComponentProps } from 'react'; 
-import { config } from './config';
 import { View } from 'react-native'; 
 import { OverlayProvider } from '@gluestack-ui/core/overlay/creator';
 import { ToastProvider } from '@gluestack-ui/core/toast/creator';
-import { useColorScheme } from 'nativewind';
 
 export type ModeType = 'light' | 'dark' | 'system';
 
@@ -16,13 +14,10 @@ export function GluestackUIProvider({
   children?: React.ReactNode;
   style?: ComponentProps<typeof View>['style']; 
 }) {
-  const { colorScheme } = useColorScheme();
-
   return (
     <View
       style={[
-        config[colorScheme! || 'light'],
-        { flex: 1, height: '100%', width: '100%' },
+        { flex: 1, height: '100%', width: '100%', backgroundColor: '#0F0F10' },
         props.style,
       ]}
     >

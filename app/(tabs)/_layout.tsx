@@ -1,7 +1,7 @@
 // app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../src/constants/theme'; // Ruta relativa directa sin alias
+import { useTheme } from '../../src/constants/theme'; 
 
 type TabBarIconProps = {
   color: string;

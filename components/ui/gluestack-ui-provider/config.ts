@@ -1,3 +1,4 @@
+//components/ui/gluestack-ui-provider/config.ts
 'use client';
 import { vars } from 'nativewind';
 

@@ -1,7 +1,7 @@
 // components/items/ChecklistCard.tsx
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewProps } from 'react-native';
-import Animated, { FadeInDown, FadeOutLeft, AnimateProps } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 import { ChecklistNote } from '../../src/types';
 import { useTheme } from '../../src/constants/theme';
 

@@ -10,7 +10,6 @@ interface IdeaCardProps {
   onPress?: () => void;
 }
 
-// Forzamos el tipado limpio para que acepte componentes hijos en las animaciones de Windows
 const AnimatedCardContainer = Animated.View as React.ComponentType<any>;
 
 export default function IdeaCard({ note, onPress }: IdeaCardProps) {
@@ -40,7 +39,8 @@ export default function IdeaCard({ note, onPress }: IdeaCardProps) {
             {note.tags.map((tag, index) => (
               <View 
                 key={index} 
-                style={[styles.chip, { backgroundColor: colors.background + '30', marginRight: spacing.xs }]}
+                /* Eliminamos la concatenación conflictiva de strings y aplicamos un color plano con opacidad limpia */
+                style={[styles.chip, { backgroundColor: colors.border, opacity: 0.8, marginRight: spacing.xs }]}
               >
                 <Text style={[styles.chipText, { color: colors.text, fontSize: typography.sizes.s }]}>
                   #{tag}

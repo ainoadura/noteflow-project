@@ -16,7 +16,7 @@ interface NotesStore {
   toggleArchiveNote: (id: string) => void;
   toggleChecklistItem: (checklistId: string, itemId: string) => void;
   createCustomList: (name: string) => string; 
-  deleteCustomList: (id: string) => void; // <-- NUEVA ACCIÓN REGISTRADA
+  deleteCustomList: (id: string) => void; 
 }
 
 const defaultLists: CustomMediaList[] = [
@@ -87,15 +87,11 @@ export const useNotesStore = create<NotesStore>()(
         return newId; 
       },
 
-      // Lógica de borrado seguro para evitar registros huérfanos
       deleteCustomList: (id) => set((state) => {
-        // Bloqueamos el borrado de la lista General ('list-all') para que siempre exista al menos un contenedor base
         if (id === 'list-all') return {};
 
         return {
-          // Eliminamos la playlist elegida de la matriz de colecciones
           lists: state.lists.filter((l) => l.id !== id),
-          // Buscamos las notas asociadas a esa lista destruida y las movemos a General Library de forma automática
           notes: state.notes.map((n) => 
             n.listId === id ? { ...n, listId: 'list-all' } : n
           )
@@ -103,8 +99,9 @@ export const useNotesStore = create<NotesStore>()(
       })
     }),
     {
-      name: 'noteflow-storage',
+      name: 'noteflow-universe-storage-final', 
       storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );
+

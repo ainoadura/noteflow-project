@@ -12,7 +12,6 @@ export default function MediaDetailScreen() {
   const { notes, deleteNote, toggleArchiveNote, archivedIds } = useNotesStore();
   const { colors, spacing, typography } = useTheme();
 
-  // Find targeted entity in memory synchronically
   const currentNote = notes.find((n) => n.id === id);
   const isArchived = archivedIds.includes(id || '');
 
@@ -25,7 +24,6 @@ export default function MediaDetailScreen() {
   }
 
   const handleDelete = () => {
-    // Structural required popup Alert notification layout matching specs
     Alert.alert(
       'Delete Post',
       'Are you absolutely sure you want to permanently erase this review from your catalog?',
@@ -35,10 +33,9 @@ export default function MediaDetailScreen() {
           text: 'Delete', 
           style: 'destructive',
           onPress: () => {
-            // Trigger feedback native light impact asynchronously upon execution bounds
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-            deleteNote(currentNote.id);
             router.back();
+            deleteNote(currentNote.id);
           }
         }
       ]
@@ -61,13 +58,12 @@ export default function MediaDetailScreen() {
         {currentNote.content}
       </Text>
 
-      {/* Extension control action buttons row operations segment layout */}
       <View style={styles.actionRow}>
         <TouchableOpacity 
           style={[styles.actionButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
           onPress={() => {
-            toggleArchiveNote(currentNote.id);
             router.back();
+            toggleArchiveNote(currentNote.id);
           }}
         >
           <Text style={{ color: colors.text, fontWeight: '600' }}>{isArchived ? 'UNARCHIVE' : 'ARCHIVE'}</Text>

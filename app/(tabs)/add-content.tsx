@@ -1,50 +1,38 @@
 // app/(tabs)/add-content.tsx
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
-  KeyboardAvoidingView, 
-  Platform,
-  SafeAreaView
-} from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import { useNotesStore } from '../../src/store/noteStore';
 import { useTheme } from '../../src/constants/theme';
 import { MediaCategory, Note } from '../../src/types';
+import { useRouter } from 'expo-router';
 
-// Enforcing static array references outside render loop bounds to solve Windows NativeWind loop bugs
 const RATING_STARS = [1, 2, 3, 4, 5];
 
 export default function AddContentScreen() {
+  const router = useRouter();
   const { colors, spacing, typography, borderRadius } = useTheme();
   const { lists, addNote, createCustomList } = useNotesStore();
 
-  // Dynamic Content Form States
   const [category, setCategory] = useState<MediaCategory>('movie');
   const [title, setTitle] = useState('');
-  const [creatorName, setCreatorName] = useState(''); // Director or Author
-  const [durationOrPages, setDurationOrPages] = useState(''); // Minutes, Chapters or Pages
+  const [creatorName, setCreatorName] = useState(''); 
+  const [durationOrPages, setDurationOrPages] = useState(''); 
   const [rating, setRating] = useState<number>(5);
   const [content, setContent] = useState('');
   const [selectedListId, setSelectedListId] = useState('list-all');
 
-  // Inline List Creation State
   const [newListName, setNewListName] = useState('');
 
   const handleCreateListOnTheFly = () => {
     if (!newListName.trim()) return;
     const generatedId = createCustomList(newListName.trim());
-    setSelectedListId(generatedId); // Focus selector to the newly constructed playlist automatically
+    setSelectedListId(generatedId); 
     setNewListName('');
   };
 
   const handleSaveMedia = () => {
     if (!title.trim() || !content.trim()) return;
 
-    // Structural note compilation matching the professor's strict interface definitions
     const newMediaPost: Note = {
       id: `note-${Date.now()}`,
       title: title.trim(),
@@ -53,26 +41,26 @@ export default function AddContentScreen() {
       creatorName: creatorName.trim(),
       durationOrPages: durationOrPages.trim(),
       rating,
-      listId: selectedListId,
+      listId: selectedListId, 
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     addNote(newMediaPost);
     
-    // Smooth input parameters cleanup reset
     setTitle('');
     setCreatorName('');
     setDurationOrPages('');
     setContent('');
+
+    router.replace('/(tabs)/home');
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top', 'left', 'right']}>
+    <SafeAreaView edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ padding: spacing.m }} showsVerticalScrollIndicator={false}>
           
-          {/* Main Brand Title Area with proper spacing */}
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.primary, fontSize: typography.sizes.xl, marginBottom: spacing.xs }]}>
               Page & Frame
@@ -82,7 +70,6 @@ export default function AddContentScreen() {
             </Text>
           </View>
 
-          {/* 1. Category Custom Selector Row */}
           <Text style={[styles.label, { color: colors.text, fontSize: typography.sizes.s }]}>CATEGORY</Text>
           <View style={[styles.selectorRow, { marginBottom: spacing.m }]}>
             {(['movie', 'tv-show', 'book'] as MediaCategory[]).map((cat) => (
@@ -109,7 +96,6 @@ export default function AddContentScreen() {
             ))}
           </View>
 
-          {/* 2. Content Title field input layout */}
           <Text style={[styles.label, { color: colors.text, fontSize: typography.sizes.s }]}>TITLE</Text>
           <TextInput
             style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border, padding: spacing.s, borderRadius: borderRadius.m }]}
@@ -120,7 +106,6 @@ export default function AddContentScreen() {
             autoCapitalize="sentences"
           />
 
-          {/* 3. Conditional Creator Label Representation */}
           <Text style={[styles.label, { color: colors.text, fontSize: typography.sizes.s }]}>
             {category === 'book' ? 'AUTHOR' : 'DIRECTOR'}
           </Text>
@@ -132,7 +117,6 @@ export default function AddContentScreen() {
             onChangeText={setCreatorName}
           />
 
-          {/* 4. Conditional Metric Field footprint details context layout */}
           <Text style={[styles.label, { color: colors.text, fontSize: typography.sizes.s }]}>
             {category === 'movie' ? 'DURATION (MINUTES)' : category === 'tv-show' ? 'NUMBER OF EPISODES' : 'TOTAL PAGES'}
           </Text>
@@ -143,7 +127,6 @@ export default function AddContentScreen() {
             value={durationOrPages}
             onChangeText={setDurationOrPages}
           />
-          {/* 5. Rating Number Selection Grid Items using isolated static reference */}
           <Text style={[styles.label, { color: colors.text, fontSize: typography.sizes.s }]}>RATING SCORE</Text>
           <View style={[styles.ratingRow, { marginBottom: spacing.m }]}>
             {RATING_STARS.map((num) => (
@@ -164,7 +147,6 @@ export default function AddContentScreen() {
             ))}
           </View>
 
-          {/* 6. Active Custom Collection horizontal list item scroll tracker representation */}
           <Text style={[styles.label, { color: colors.text, fontSize: typography.sizes.s }]}>ASSIGN TO PLAYLIST / COLLECTION</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.listsScroll}>
             {lists.map((list) => (
@@ -188,7 +170,6 @@ export default function AddContentScreen() {
             ))}
           </ScrollView>
 
-          {/* 7. Create Playlist On the fly fast action text row box inline item container layout */}
           <View style={[styles.inlineListContainer, { backgroundColor: colors.surface, padding: spacing.s, borderRadius: borderRadius.m, marginBottom: spacing.m, borderColor: colors.border, borderWidth: 1 }]}>
             <TextInput
               style={[styles.smallInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border, padding: spacing.s, borderRadius: borderRadius.m }]}
@@ -205,7 +186,6 @@ export default function AddContentScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* 8. Critique evaluation textarea analysis box */}
           <Text style={[styles.label, { color: colors.text, fontSize: typography.sizes.s }]}>CRITIQUE REVIEW NOTES</Text>
           <TextInput
             style={[styles.textArea, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border, padding: spacing.s, borderRadius: borderRadius.m }]}
@@ -217,7 +197,6 @@ export default function AddContentScreen() {
             onChangeText={setContent}
           />
 
-          {/* Trigger Commit Save Registration action options button component item element layout */}
           <TouchableOpacity 
             style={[styles.saveButton, { backgroundColor: colors.primary, marginTop: spacing.s, borderRadius: borderRadius.m, padding: spacing.m }]}
             onPress={handleSaveMedia}
@@ -227,6 +206,7 @@ export default function AddContentScreen() {
 
         </ScrollView>
       </KeyboardAvoidingView>
+    
     </SafeAreaView>
   );
 }

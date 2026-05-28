@@ -10,13 +10,13 @@ export default function RootLayout() {
 
   return (
     <GluestackUIProvider>
-      <StatusBar style={colors.background === '#FFFFFF' ? 'dark' : 'light'} />
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: colors.background === '#FFFFFF' ? '#1A1A1A' : colors.surface,
+            backgroundColor: colors.surface || '#1C1C1E',
           },
-          headerTintColor: '#FFFFFF',
+          headerTintColor: colors.text || '#FFFFFF',
           headerTitleStyle: {
             fontWeight: 'bold',
           },

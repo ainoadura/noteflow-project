@@ -1,6 +1,4 @@
 // src/constants/theme.ts
-import { useColorScheme } from 'react-native';
-
 export const spacing = {
   xs: 4,
   s: 8,
@@ -32,25 +30,25 @@ export const borderRadius = {
   full: 9999,
 };
 
-// Enhanced brand categorization category colors
+// 🎨 REDISEÑO: Colores temáticos por categoría decididos para Page & Frame
 export const categoryColors = {
-  books: '#F59E0B',   // Elegant Amber Gold for literature core
-  movies: '#EF4444',  // Cinematic Premium Crimson Red
-  series: '#10B981',  // Emerald Modern Green
-  star: '#FFB300',
+  books: '#10B981',   // Verde esmeralda editorial para libros
+  movies: '#FF4B4B',  // Rojo cinematográfico potente para películas
+  series: '#8B5CF6',  // Morado streaming eléctrico para series de TV
+  star: '#F59E0B',    // Ámbar/Naranja cálido para las estrellas de puntuación
 };
 
-// 🎨 REDISEÑO: Paleta Oscura e Inmersiva por Defecto para Page & Frame
+// 🎨 REDISEÑO: Paleta Oscura e Inmersiva Premium definitiva
 const darkPalette = {
-  primary: '#F59E0B',       // Golden Amber for highlights and key elements
-  background: '#121212',    // Deep cinematic midnight background
-  surface: '#1E1E1E',       // Smooth anthracite container card fill
-  text: '#FFFFFF',          // Pure crisp white for readable titles
-  textSecondary: '#9CA3AF', // Light silver gray for metadata details
-  border: '#2D2D2D',        // Subdued elegant outline borders
+  primary: '#F59E0B',       // Ámbar para destacados principales
+  background: '#0F0F10',    // Negro azabache profundo (evita fatiga visual)
+  surface: '#1C1C1E',       // Gris grafito oscuro para las tarjetas contenedoras
+  text: '#FFFFFF',          // Blanco puro para títulos legibles
+  textSecondary: '#9CA3AF', // Gris claro para los metadatos secundarios
+  border: '#2C2C2E',        // Gris sutil para las líneas y divisiones discretas
 };
 
-// Fallback light theme with sleek design adjustments
+// Fallback light theme adaptado de forma limpia
 const lightPalette = {
   primary: '#D97706',
   background: '#FAFAFA',
@@ -61,10 +59,6 @@ const lightPalette = {
 };
 
 export function useTheme() {
-  const colorScheme = useColorScheme();
-  
-  // For validation and assignment phase, we enforce the dark mode layout directly
-  // Change to 'isDark = colorScheme === "dark"' later if system mirroring is required
   const isDark = true; 
   const colors = isDark ? darkPalette : lightPalette;
 

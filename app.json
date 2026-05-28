@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Page & Frame",
+    "name": "Page and Frame",
     "slug": "noteflow-project",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "scheme": "noteflow",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true
     },

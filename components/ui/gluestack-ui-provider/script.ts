@@ -1,4 +1,9 @@
+// components/ui/gluestack-ui-provider/script.ts
 export const script = (mode: string) => {
+  if (typeof document === 'undefined' || typeof window === 'undefined') {
+    return;
+  }
+
   const documentElement = document.documentElement;
 
   function getSystemColorMode() {
