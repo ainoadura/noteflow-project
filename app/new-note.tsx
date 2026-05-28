@@ -30,7 +30,34 @@ type FormType = 'standard' | 'checklist' | 'idea';
 export default function NewNoteModal() {
   const router = useRouter();
   const { addNote } = useNotesStore();
-  const { colors, spacing, typography } = useTheme();
+  const theme = useTheme();
+  
+  // Red de seguridad para colores
+  const colors = {
+    background: theme?.colors?.background || '#0F0F10',
+    surface: theme?.colors?.surface || '#1C1C1E',
+    primary: theme?.colors?.primary || '#F59E0B',
+    border: theme?.colors?.border || '#2C2C2E',
+    text: theme?.colors?.text || '#FFFFFF',
+    textSecondary: theme?.colors?.textSecondary || '#9CA3AF',
+  };
+
+  // Red de seguridad para espaciados (Corrige el colapso del padding)
+  const spacing = {
+    xs: theme?.spacing?.xs || 4,
+    s: theme?.spacing?.s || 8,
+    m: theme?.spacing?.m || 16,
+    l: theme?.spacing?.l || 24, // Añadido para el margen del botón final
+  };
+
+  // Red de seguridad para fuentes
+  const typography = {
+    sizes: {
+      s: theme?.typography?.sizes?.s || 14,
+      xl: theme?.typography?.sizes?.xl || 22,
+    }
+  };
+
 
   const [formType, setFormType] = useState<FormType>('standard');
   const [title, setTitle] = useState('');

@@ -12,14 +12,22 @@ type TabBarIconProps = {
 export default function TabsLayout() {
   const { colors } = useTheme();
 
+  // Red de seguridad: si colors viene vacío, evitamos el pantallazo en blanco
+  const safeColors = {
+    primary: colors?.primary || '#007AFF',
+    textSecondary: colors?.textSecondary || '#8E8E93',
+    background: colors?.background || '#000000',
+    border: colors?.border || '#38383A',
+  };
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarActiveTintColor: safeColors.primary,
+        tabBarInactiveTintColor: safeColors.textSecondary,
         tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
+          backgroundColor: safeColors.background,
+          borderTopColor: safeColors.border,
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,

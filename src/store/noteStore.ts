@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
-import { Note, ChecklistNote, IdeaNote, CustomMediaList } from '../types';
+import { Note, ChecklistNote, IdeaNote, CustomMediaList } from '../types/index';
 
 interface NotesStore {
   notes: Note[];
@@ -12,6 +12,8 @@ interface NotesStore {
   archivedIds: string[];
   lists: CustomMediaList[]; 
   addNote: (note: Note) => void;
+  addChecklist: (checklist: ChecklistNote) => void;
+  addIdea: (idea: IdeaNote) => void;
   deleteNote: (id: string) => void;
   toggleArchiveNote: (id: string) => void;
   toggleChecklistItem: (checklistId: string, itemId: string) => void;
@@ -36,6 +38,14 @@ export const useNotesStore = create<NotesStore>()(
       
       addNote: (note) => set((state) => ({ 
         notes: [note, ...state.notes] 
+      })),
+
+      addChecklist: (checklist) => set((state) => ({
+        checklists: [checklist, ...state.checklists]
+      })),
+
+      addIdea: (idea) => set((state) => ({
+        ideas: [idea, ...state.ideas]
       })),
       
       deleteNote: (id) => set((state) => ({ 
@@ -104,4 +114,3 @@ export const useNotesStore = create<NotesStore>()(
     }
   )
 );
-

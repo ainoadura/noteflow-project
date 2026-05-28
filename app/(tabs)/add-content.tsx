@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import { useNotesStore } from '../../src/store/noteStore';
 import { useTheme } from '../../src/constants/theme';
-import { MediaCategory, Note } from '../../src/types';
+import { MediaCategory, Note } from '../../src/types/index';
 import { useRouter } from 'expo-router';
 
 const RATING_STARS = [1, 2, 3, 4, 5];
@@ -53,11 +53,11 @@ export default function AddContentScreen() {
     setDurationOrPages('');
     setContent('');
 
-    router.replace('/(tabs)/home');
+    router.replace('/home');
   };
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background || '#0F0F10' }} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ padding: spacing.m }} showsVerticalScrollIndicator={false}>
           
@@ -80,7 +80,7 @@ export default function AddContentScreen() {
                   { 
                     backgroundColor: category === cat ? colors.primary : colors.surface,
                     borderColor: colors.border,
-                    borderRadius: borderRadius.m 
+                    borderRadius: borderRadius.m  
                   }
                 ]}
                 onPress={() => {

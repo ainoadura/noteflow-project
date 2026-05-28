@@ -60,12 +60,12 @@ const lightPalette = {
 
 export function useTheme() {
   const isDark = true; 
-  const colors = isDark ? darkPalette : lightPalette;
+  const selectedPalette = isDark ? darkPalette : lightPalette;
 
   return {
     isDark,
     colors: {
-      ...colors,
+      ...selectedPalette, 
       ...categoryColors,
     },
     spacing,
