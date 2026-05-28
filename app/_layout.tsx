@@ -9,7 +9,7 @@ export default function RootLayout() {
   const { colors } = useTheme();
 
   return (
-    <GluestackUIProvider>
+    <GluestackUIProvider mode="light">
       <StatusBar style="light" />
       <Stack
         screenOptions={{
