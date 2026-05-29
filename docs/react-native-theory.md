@@ -138,19 +138,33 @@ Para resolverlo siguiendo las buenas prácticas de React Native, se utiliza el m
 import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useNotesStore } from '../src/store/noteStore';
+import { useTheme } from '../src/constants/theme';
 
-export default function AppGuard() {
-  // Use the official reactive method to track store hydration status
-  const hasHydrated = useNotesStore((state) => state._hasHydrated); 
-  // O mediante el método de escucha directa en el layout principal:
-  // const hasHydrated = useNotesStore.persist.hasHydrated();
+export default function AppHydrationGuard({ children }: { children: React.ReactNode }) {
+  const hasHydrated = useNotesStore.persist.hasHydrated();
+  const { colors } = useTheme();
 
   if (!hasHydrated) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#0284C7" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background || '#0F0F10' }}>
+        <ActivityIndicator size="large" color={colors.primary || '#F59E0B'} />
       </View>
     );
   }
+
+  return <>{children}</>;
 }
+
 ```
+
+## 11. Validación de Formularios con Zod y Animaciones Nativas con Reanimated
+
+Para la creación ágil de registros en el modal central (`app/new-note.tsx`), se ha integrado un motor de validación estricta combinado con animaciones fluidas en la interfaz:
+
+### A. Validación Robusta en Tiempo de Ejecución (Zod)
+*   **Justificación:** React Native no tiene un sistema nativo para validar que los inputs de texto cumplan con unos mínimos de seguridad. Al usar esquemas de Zod (`standardSchema`, `checklistSchema`, `ideaSchema`), la aplicación analiza los datos mediante `.safeParse()` antes de enviarlos al almacenamiento.
+*   **Rendimiento:** Esto evita que entren strings vacíos o datos corruptos al Store de Zustand y a `AsyncStorage`, atajando los errores de renderizado en cascada que congelan las pantallas en blanco. El manejo de errores mapea los fallos directamente sobre el hilo gráfico mediante estados limpios.
+
+### B. Animaciones de Alto Rendimiento (React Native Reanimated v3)
+*   **Justificación:** Las tarjetas del tablón (`NoteCard`, `ChecklistCard`, `IdeaCard`) utilizan los contenedores de Reanimated (`Animated.View`) junto con efectos de transición físicos (`entering={FadeInDown}` y `exiting={FadeOutLeft}`).
+*   **Rendimiento en Hilos:** A diferencia de la API básica de React Native, Reanimated ejecuta toda la lógica de interpolación matemáica, layouts y físicas directamente en el **UI/Main Thread** (hilo nativo) a través de *Worklets* de herencia en C++. Al no tener que enviar datos continuamente de ida y vuelta a través del puente de JavaScript (*Bridge*), las tarjetas aparecen y desaparecen con un frame-rate óptimo de 60 FPS estables, eliminando tirones visuales (*lag*) al interactuar o borrar registros mediante el toque prolongado.
