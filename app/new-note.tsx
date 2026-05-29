@@ -5,14 +5,11 @@ import { useRouter } from 'expo-router';
 import { z } from 'zod';
 import { useNotesStore } from '../src/store/noteStore';
 import { useTheme } from '../src/constants/theme';
-import { Note, ChecklistItem } from '../src/types'; 
+import { ChecklistItem, IdeaNote, ChecklistNote } from '../src/types/index'; 
 
-const noteSchema = z.object({
+const standardSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
-  content: z.string().min(1, 'La reseña no puede estar vacía'),
-  creatorName: z.string().min(1, 'El nombre del autor o director es obligatorio'),
-  durationOrPages: z.string().min(1, 'Especifica la duración o número de páginas'),
-  rating: z.number().min(1, 'La puntuación debe ser entre 1 y 5').max(5),
+  content: z.string().min(1, 'La nota rápida no puede estar vacía'),
 });
 
 const checklistSchema = z.object({
@@ -21,18 +18,15 @@ const checklistSchema = z.object({
 
 const ideaSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
-  tagsString: z.string().min(1, 'Añade al menos una etiqueta separada por comas'),
-  color: z.string().min(1, 'Selecciona un color de fondo'),
+  content: z.string().min(1, 'El pensamiento no puede estar vacío'),
 });
 
 type FormType = 'standard' | 'checklist' | 'idea';
 
 export default function NewNoteModal() {
   const router = useRouter();
-  const { addNote } = useNotesStore();
+  const { addIdea, addChecklist } = useNotesStore();
   const theme = useTheme();
-  
-  // Red de seguridad para colores
   const colors = {
     background: theme?.colors?.background || '#0F0F10',
     surface: theme?.colors?.surface || '#1C1C1E',
@@ -42,15 +36,13 @@ export default function NewNoteModal() {
     textSecondary: theme?.colors?.textSecondary || '#9CA3AF',
   };
 
-  // Red de seguridad para espaciados (Corrige el colapso del padding)
   const spacing = {
     xs: theme?.spacing?.xs || 4,
     s: theme?.spacing?.s || 8,
     m: theme?.spacing?.m || 16,
-    l: theme?.spacing?.l || 24, // Añadido para el margen del botón final
+    l: theme?.spacing?.l || 24,
   };
 
-  // Red de seguridad para fuentes
   const typography = {
     sizes: {
       s: theme?.typography?.sizes?.s || 14,
@@ -58,26 +50,16 @@ export default function NewNoteModal() {
     }
   };
 
-
   const [formType, setFormType] = useState<FormType>('standard');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  
-  const [creatorName, setCreatorName] = useState('');
-  const [durationOrPages, setDurationOrPages] = useState('');
-  const [rating, setRating] = useState<number>(5); 
-
-  const [color, setColor] = useState('#E0F2FE');
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [newItemText, setNewItemText] = useState('');
-  const [tagsString, setTagsString] = useState('');
+  const [color, setColor] = useState('#DCFCE7');
 
   const [errors, setErrors] = useState<{ 
     title?: string; 
     content?: string; 
-    creatorName?: string; 
-    durationOrPages?: string;
-    tagsString?: string;
   }>({});
 
   const handleAddItem = () => {
@@ -93,31 +75,26 @@ export default function NewNoteModal() {
 
   const handleSave = () => {
     setErrors({});
-    
     if (formType === 'standard') {
-      const result = noteSchema.safeParse({ title, content, creatorName, durationOrPages, rating });
+      const result = standardSchema.safeParse({ title, content });
       if (!result.success) {
         const formattedErrors = result.error.flatten().fieldErrors;
         setErrors({
           title: formattedErrors.title?.[0],
           content: formattedErrors.content?.[0],
-          creatorName: formattedErrors.creatorName?.[0],
-          durationOrPages: formattedErrors.durationOrPages?.[0],
         });
         return;
       }
 
-      const newStandardNote: Note = {
-        id: `note-${Date.now()}`,
-        title: title.trim(),
-        content: content.trim(),
-        creatorName: creatorName.trim(),
-        durationOrPages: durationOrPages.trim(),
-        rating,
+      const newQuickNote: IdeaNote = {
+        id: `quick-${Date.now()}`,
+        title: `${title.trim()} — ${content.trim()}`, 
+        tags: ['Nota Rápida'],
+        color: 'blue-electric',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      addNote(newStandardNote);
+      addIdea(newQuickNote); 
       
     } else if (formType === 'checklist') {
       const result = checklistSchema.safeParse({ title });
@@ -126,33 +103,49 @@ export default function NewNoteModal() {
         setErrors({ title: formattedErrors.title?.[0] });
         return;
       }
-      console.log('Saving Checklist Note', { title, checklistItems });
+
+      const newChecklistNote: ChecklistNote = {
+        id: `chk-${Date.now()}`,
+        title: title.trim(),
+        items: checklistItems,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      addChecklist(newChecklistNote); 
       
     } else if (formType === 'idea') {
-      const result = ideaSchema.safeParse({ title, tagsString, color });
+      const result = ideaSchema.safeParse({ title, content });
       if (!result.success) {
         const formattedErrors = result.error.flatten().fieldErrors;
         setErrors({
           title: formattedErrors.title?.[0],
-          tagsString: formattedErrors.tagsString?.[0],
+          content: formattedErrors.content?.[0],
         });
         return;
       }
-      const tagsArray = tagsString.split(',').map(t => t.trim()).filter(t => t !== '');
-      console.log('Saving Idea Note', { title, tags: tagsArray, color });
+
+      const newIdeaNote: IdeaNote = {
+        id: `idea-${Date.now()}`,
+        title: `${title.trim()}: ${content.trim()}`, 
+        tags: ['Pensamiento'],
+        color: color, 
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      addIdea(newIdeaNote); 
     }
 
     router.back();
   };
 
-    return (
+  return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[styles.container, { backgroundColor: colors.background || '#0F0F10' }]}
     >
       <ScrollView contentContainerStyle={{ padding: spacing.m }}>
         
-        {/* Type Selector Tabs Segment */}
+        {/* Selector de Tipo (Standard, Checklist, Idea) */}
         <View style={[styles.selectorRow, { marginBottom: spacing.m }]}>
           {(['standard', 'checklist', 'idea'] as FormType[]).map((type) => (
             <TouchableOpacity
@@ -173,68 +166,24 @@ export default function NewNoteModal() {
           ))}
         </View>
 
-        {/* Common Title Input Field */}
-        <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Title</Text>
+        {/* Campo común: Título de la Nota Rápida */}
+        <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Title / Subject</Text>
         <TextInput
           style={[styles.input, { backgroundColor: colors.surface || '#1C1C1E', color: colors.text || '#FFFFFF', borderColor: colors.border || '#2C2C2E', padding: spacing.s }]}
-          placeholder="e.g., Inception, Dune..."
+          placeholder="e.g., Quick thought, Watchlist advice, Gym task..."
           placeholderTextColor={colors.textSecondary || '#9CA3AF'}
           value={title}
           onChangeText={setTitle}
         />
         {errors.title && <Text style={styles.errorText}>{errors.title}</Text>}
 
-        {/* Dynamic Branch Rendering: Standard Review Form with Media Metadata */}
+        {/* RAMA ESTÁNDAR SIMPLIFICADA (Sin director, páginas ni estrellas) */}
         {formType === 'standard' && (
           <View style={{ marginTop: spacing.s }}>
-            
-            {/* Input for Director / Author */}
-            <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Director / Author</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.surface || '#1C1C1E', color: colors.text || '#FFFFFF', borderColor: colors.border || '#2C2C2E', padding: spacing.s }]}
-              placeholder="e.g., Christopher Nolan, Frank Herbert..."
-              placeholderTextColor={colors.textSecondary || '#9CA3AF'}
-              value={creatorName}
-              onChangeText={setCreatorName}
-            />
-            {errors.creatorName && <Text style={styles.errorText}>{errors.creatorName}</Text>}
-
-            {/* Input for Duration / Pages */}
-            <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Duration / Total Pages</Text>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.surface || '#1C1C1E', color: colors.text || '#FFFFFF', borderColor: colors.border || '#2C2C2E', padding: spacing.s }]}
-              placeholder="e.g., 148 min, 600 pages..."
-              placeholderTextColor={colors.textSecondary || '#9CA3AF'}
-              value={durationOrPages}
-              onChangeText={setDurationOrPages}
-            />
-            {errors.durationOrPages && <Text style={styles.errorText}>{errors.durationOrPages}</Text>}
-
-            {/* Rating Selector Component Section */}
-            <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Rating Score (1-5 Stars)</Text>
-            <View style={styles.ratingRow}>
-              {[1, 2, 3, 4, 5].map((num) => (
-                <TouchableOpacity
-                  key={num}
-                  style={[
-                    styles.ratingButton, 
-                    { 
-                      backgroundColor: rating === num ? (colors.primary || '#F59E0B') : (colors.surface || '#1C1C1E'), 
-                      borderColor: colors.border || '#2C2C2E' 
-                    }
-                  ]}
-                  onPress={() => setRating(num)}
-                >
-                  <Text style={{ color: rating === num ? '#FFFFFF' : (colors.text || '#FFFFFF'), fontWeight: 'bold' }}>{num} ★</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Review Content Text Area */}
-            <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14, marginTop: spacing.s }]}>Review Analysis</Text>
+            <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Quick Note Content</Text>
             <TextInput
               style={[styles.textArea, { backgroundColor: colors.surface || '#1C1C1E', color: colors.text || '#FFFFFF', borderColor: colors.border || '#2C2C2E', padding: spacing.s }]}
-              placeholder="Write your movie/book detailed critique..."
+              placeholder="Write your rapid thoughts or recommendations here..."
               placeholderTextColor={colors.textSecondary || '#9CA3AF'}
               multiline
               numberOfLines={5}
@@ -245,14 +194,14 @@ export default function NewNoteModal() {
           </View>
         )}
 
-        {/* Dynamic Branch Rendering: Checklist Watchlist Form */}
+        {/* RAMA CHECKLIST (Tareas rápidas) */}
         {formType === 'checklist' && (
           <View style={{ marginTop: spacing.s }}>
-            <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Episodes / Progress Checklist</Text>
+            <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Items / Progress Checklist</Text>
             <View style={styles.addItemRow}>
               <TextInput
                 style={[styles.input, { flex: 1, backgroundColor: colors.surface || '#1C1C1E', color: colors.text || '#FFFFFF', borderColor: colors.border || '#2C2C2E', padding: spacing.s, marginBottom: 0 }]}
-                placeholder="e.g., Episode 1: Pilot"
+                placeholder="e.g., Buy milk, Check episode 2..."
                 placeholderTextColor={colors.textSecondary || '#9CA3AF'}
                 value={newItemText}
                 onChangeText={setNewItemText}
@@ -273,18 +222,20 @@ export default function NewNoteModal() {
           </View>
         )}
 
-        {/* Dynamic Branch Rendering: Quick Recommendation Idea Form */}
+        {/* RAMA IDEA / PENSAMIENTO SIMPLIFICADA */}
         {formType === 'idea' && (
           <View style={{ marginTop: spacing.s }}>
-            <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Tags (Comma Separated)</Text>
+            <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14 }]}>Brainstorm / Idea Concept</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.surface || '#1C1C1E', color: colors.text || '#FFFFFF', borderColor: colors.border || '#2C2C2E', padding: spacing.s }]}
-              placeholder="e.g., hidden-gem, scifi, masterpiece"
+              style={[styles.textArea, { backgroundColor: colors.surface || '#1C1C1E', color: colors.text || '#FFFFFF', borderColor: colors.border || '#2C2C2E', padding: spacing.s }]}
+              placeholder="Write down your recommendation idea or raw insight parameters..."
               placeholderTextColor={colors.textSecondary || '#9CA3AF'}
-              value={tagsString}
-              onChangeText={setTagsString}
+              multiline
+              numberOfLines={5}
+              value={content}
+              onChangeText={setContent}
             />
-            {errors.tagsString && <Text style={styles.errorText}>{errors.tagsString}</Text>}
+            {errors.content && <Text style={styles.errorText}>{errors.content}</Text>}
 
             <Text style={[styles.label, { color: colors.text || '#FFFFFF', fontSize: typography?.sizes?.s || 14, marginTop: spacing.s }]}>Visual Theme Color</Text>
             <View style={styles.colorRow}>
@@ -299,12 +250,12 @@ export default function NewNoteModal() {
           </View>
         )}
 
-        {/* Action Button */}
+        {/* Botón Unificado de Guardado Rápido */}
         <TouchableOpacity 
           style={[styles.saveButton, { backgroundColor: colors.primary || '#F59E0B', marginTop: spacing.l, padding: spacing.m }]}
           onPress={handleSave}
         >
-          <Text style={styles.saveButtonText}>SAVE REGISTRATION</Text>
+          <Text style={styles.saveButtonText}>SAVE</Text>
         </TouchableOpacity>
 
       </ScrollView>
@@ -328,7 +279,4 @@ const styles = StyleSheet.create({
   colorCircle: { width: 36, height: 36, borderRadius: 18 },
   saveButton: { borderRadius: 10, alignItems: 'center' },
   saveButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 },
-  ratingRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  ratingButton: { flex: 1, height: 38, borderRadius: 8, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
 });
-

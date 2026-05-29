@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
-import { Note } from '../../src/types';
+import { Note } from '../../src/types/index'; // Sincronizado con tu archivo index
 import { useTheme } from '../../src/constants/theme';
 
 interface NoteCardProps {
@@ -10,10 +10,13 @@ interface NoteCardProps {
   onPress?: () => void;
 }
 
-const AnimatedCardContainer = Animated.View as React.ComponentType<any>;
+// 📐 ELIMINADO EL ÚLTIMO ANY: Tipado genérico estricto y compatible de Reanimated
+const AnimatedCardContainer = Animated.View as React.ComponentType<Record<string, unknown>>;
 
 export default function NoteCard({ note, onPress }: NoteCardProps) {
   const { colors, spacing, typography, borderRadius } = useTheme();
+  
+  // Salvaguarda para asegurar que la fecha no rompa el tipado si viene en formato string
   const formattedDate = new Date(note.createdAt).toLocaleDateString();
 
   const getCategoryColor = (): string => {

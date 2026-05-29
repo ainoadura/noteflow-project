@@ -201,7 +201,7 @@ export default function AddContentScreen() {
             style={[styles.saveButton, { backgroundColor: colors.primary, marginTop: spacing.s, borderRadius: borderRadius.m, padding: spacing.m }]}
             onPress={handleSaveMedia}
           >
-            <Text style={[styles.saveButtonText, { color: colors.background }]}>SAVE INSIGHT REGISTRATION</Text>
+            <Text style={[styles.saveButtonText, { color: colors.background }]}>SAVE</Text>
           </TouchableOpacity>
 
         </ScrollView>

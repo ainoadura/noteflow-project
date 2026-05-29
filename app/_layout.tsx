@@ -24,6 +24,8 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="note/[id]" options={{ title: 'Media Detail' }} />
+        <Stack.Screen name="new-note" options={{ title: 'New Note', presentation: 'modal' }} />
+        
       </Stack>
     </GluestackUIProvider>
   );

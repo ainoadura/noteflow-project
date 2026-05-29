@@ -1,19 +1,24 @@
 // components/items/IdeaCard.tsx
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
-import { IdeaNote } from '../../src/types';
+import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated'; 
+import { IdeaNote } from '../../src/types/index'; 
 import { useTheme } from '../../src/constants/theme';
 
 interface IdeaCardProps {
   note: IdeaNote;
   onPress?: () => void;
+  onLongPress?: () => void; 
 }
 
-const AnimatedCardContainer = Animated.View as React.ComponentType<any>;
+const AnimatedCardContainer = Animated.View as React.ComponentType<Record<string, unknown>>;
 
-export default function IdeaCard({ note, onPress }: IdeaCardProps) {
+export default function IdeaCard({ note, onPress, onLongPress }: IdeaCardProps) {
   const { colors, spacing, typography } = useTheme();
+
+  const isBlueElectric = note.color === 'blue-electric';
+  const cardBgColor = isBlueElectric ? '#1C1C1E' : (note.color || colors.surface);
+  const borderColor = isBlueElectric ? '#007AFF' : (note.color === 'green-flash' ? '#34C759' : colors.border);
 
   return (
     <AnimatedCardContainer entering={FadeInDown} exiting={FadeOutLeft}>
@@ -21,28 +26,35 @@ export default function IdeaCard({ note, onPress }: IdeaCardProps) {
         style={[
           styles.card, 
           { 
-            backgroundColor: note.color || colors.surface, 
+            backgroundColor: cardBgColor, 
             padding: spacing.m, 
-            marginBottom: spacing.s 
+            marginBottom: spacing.s,
+            borderWidth: isBlueElectric || note.color === 'green-flash' ? 1.5 : 1,
+            borderColor: borderColor
           }
         ]}
         onPress={onPress}
+        onLongPress={onLongPress} 
         activeOpacity={0.8}
       >
-        <Text style={[styles.title, { color: colors.text, fontSize: typography.sizes.m }]}>
+        <Text style={[styles.title, { color: isBlueElectric ? colors.text : '#1F2937', fontSize: typography.sizes.m }]}>
           {note.title}
         </Text>
 
-        {/* Render Tags as Chips if present */}
         {note.tags && note.tags.length > 0 && (
           <View style={[styles.tagsContainer, { marginTop: spacing.s }]}>
             {note.tags.map((tag, index) => (
               <View 
                 key={index} 
-                /* Eliminamos la concatenación conflictiva de strings y aplicamos un color plano con opacidad limpia */
-                style={[styles.chip, { backgroundColor: colors.border, opacity: 0.8, marginRight: spacing.xs }]}
+                style={[
+                  styles.chip, 
+                  { 
+                    backgroundColor: isBlueElectric ? colors.border : 'rgba(0, 0, 0, 0.08)', 
+                    marginRight: spacing.xs 
+                  }
+                ]}
               >
-                <Text style={[styles.chipText, { color: colors.text, fontSize: typography.sizes.s }]}>
+                <Text style={[styles.chipText, { color: isBlueElectric ? colors.text : '#4B5563', fontSize: typography.sizes.s }]}>
                   #{tag}
                 </Text>
               </View>
