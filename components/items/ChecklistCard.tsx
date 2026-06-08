@@ -8,7 +8,7 @@ import { useTheme } from '../../src/constants/theme';
 interface ChecklistCardProps {
   note: ChecklistNote;
   onPress?: () => void;
-  onLongPress?: () => void; // 🌟 Paso B: Añadido a la interfaz
+  onLongPress?: () => void; 
 }
 
 const AnimatedCardContainer = Animated.View as React.ComponentType<Record<string, unknown>>;
@@ -36,7 +36,7 @@ export default function ChecklistCard({ note, onPress, onLongPress }: ChecklistC
           }
         ]}
         onPress={onPress}
-        onLongPress={onLongPress} // 🌟 Paso B: Pasado al botón real
+        onLongPress={onLongPress} 
         activeOpacity={0.7}
       >
         <View style={styles.headerRow}>

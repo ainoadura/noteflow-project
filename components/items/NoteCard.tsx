@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
-import { Note } from '../../src/types/index'; // Sincronizado con tu archivo index
+import { Note } from '../../src/types/index'; 
 import { useTheme } from '../../src/constants/theme';
 
 interface NoteCardProps {
@@ -10,7 +10,6 @@ interface NoteCardProps {
   onPress?: () => void;
 }
 
-// 📐 ELIMINADO EL ÚLTIMO ANY: Tipado genérico estricto y compatible de Reanimated
 const AnimatedCardContainer = Animated.View as React.ComponentType<Record<string, unknown>>;
 
 export default function NoteCard({ note, onPress }: NoteCardProps) {
