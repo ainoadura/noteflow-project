@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "name": "📦 GLOBAL ROOT",
+      "path": "."
+    },
+    {
+      "name": "📱 FRONTEND (Mobile)",
+      "path": "frontend"
+    },
+    {
+      "name": "💻 BACKEND (Server)",
+      "path": "backend"
+    }
+  ],
+  "settings": {}
+}

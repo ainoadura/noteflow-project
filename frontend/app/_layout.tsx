@@ -5,6 +5,7 @@ import { useTheme } from '../src/constants/theme';
 import { StatusBar } from 'expo-status-bar';
 import '../global.css'; 
 
+
 export default function RootLayout() {
   const { colors } = useTheme();
 

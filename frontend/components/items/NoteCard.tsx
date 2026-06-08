@@ -5,6 +5,7 @@ import Animated, { FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 import { Note } from '../../src/types/index'; 
 import { useTheme } from '../../src/constants/theme';
 
+
 interface NoteCardProps {
   note: Note;
   onPress?: () => void;

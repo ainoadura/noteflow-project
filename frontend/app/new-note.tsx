@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { z } from 'zod';
 import { useNotesStore } from '../src/store/noteStore';
 import { useTheme } from '../src/constants/theme';
-import { ChecklistItem, IdeaNote, ChecklistNote } from '../src/types/index'; 
+import { ChecklistItem, IdeaNote, ChecklistNote } from '../src/types/index';
 
 const standardSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
