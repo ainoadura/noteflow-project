@@ -69,3 +69,54 @@ Las transacciones en la base de datos están blindadas por las propiedades **ACI
 El ciclo de desarrollo de la base de datos en Neon diferencia estrictamente dos lenguajes de interacción:
 1.  **DDL (Data Definition Language):** Comandos utilizados por el administrador para estructurar el esquema del servidor en la nube (`CREATE TABLE`, `ALTER`, `DROP`). Define los tipos de datos exactos de nuestras notas rápidas.
 2.  **DML (Data Mining/Manipulation Language):** Sentencias dinámicas que ejecuta nuestra API de Next.js en tiempo de ejecución (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) para transferir de forma síncrona los objetos JSON del frontend hacia las tuplas físicas de PostgreSQL.
+
+
+## 6. Diagrama Entidad-Relación (DER) y Diseño del Esquema en Neon
+
+Para dar soporte a la persistencia unificada en la nube de Neon, se ha ejecutado el DDL optimizado en la consola SQL de PostgreSQL. A diferencia del enunciado genérico, el esquema se ha simplificado a **dos tablas relacionales**, absorbiendo la lógica de etiquetado en la tabla central para optimizar las consultas y eliminar tablas huérfanas en tiempo de ejecución.
+
+### A. Estructura de las Tablas y Diccionario de Datos
+
+#### 1. Tabla Central: `notes`
+Representa la entidad madre que unifica las notas estándar, las listas de verificación y los pensamientos rápidos.
+*   **`id` (VARCHAR(50) / PRIMARY KEY):** Identificador único e irrepetible transferido desde el cliente móvil tras su generación offline.
+*   **`title` (VARCHAR(255) / NOT NULL):** Título descriptivo del registro o combinación ágil de cabecera.
+*   **`content` (TEXT / NULL):** Cuerpo de la nota rápida o desarrollo del pensamiento.
+*   **`type` (VARCHAR(50) / CHECK):** Restricción estricta de dominio que solo admite los valores `('standard', 'checklist', 'idea')`, mapeando con las pestañas de la interfaz móvil.
+*   **`color` (VARCHAR(30) / NULL):** Almacena la marca de control (`blue-electric`) o el código hexadecimal pastel seleccionado para los bordes visuales.
+*   **`created_at` (TIMESTAMPTZ / NOT NULL):** Marca de tiempo con zona horaria de la creación del registro.
+*   **`updated_at` (TIMESTAMPTZ / NOT NULL):** Marca de tiempo de la última modificación.
+
+#### 2. Tabla Secundaria: `checklist_items`
+Representa las tareas individuales o capítulos asociados exclusivamente a las notas de tipo lista.
+*   **`id` (VARCHAR(50) / PRIMARY KEY):** Identificador único de la tarea generado en el cliente móvil.
+*   **`note_id` (VARCHAR(50) / FOREIGN KEY):** Clave foránea que conecta la tarea con su nota madre en la tabla `notes`.
+*   **`text` (VARCHAR(255) / NOT NULL):** Descripción textual de la tarea específica.
+*   **`is_completed` (BOOLEAN / DEFAULT FALSE):** Estado de verificación binario utilizado para calcular la barra de progreso en el frontend.
+
+---
+
+### B. Relaciones del Modelo y Justificación de Arquitectura
+
+El esquema implementa una relación de **1 a Muchos (1:N)** entre la tabla `notes` y `checklist_items`:
+*   Una tupla en la tabla `notes` puede tener **cero o múltiples** elementos hijos en la tabla `checklist_items` (específicamente cuando `type = 'checklist'`).
+*   Cada elemento en `checklist_items` pertenece de forma obligatoria a **una y solo una** nota madre.
+
+```text
+  ┌────────────────────────┐             ┌────────────────────────┐
+  │         NOTES          │             │    CHECKLIST_ITEMS     │
+  ├────────────────────────┤             ├────────────────────────┤
+  │ PK │ id (VARCHAR)      │1           N│ PK │ id (VARCHAR)      │
+  │    │ title (VARCHAR)   ├────────────►│ FK │ note_id (VARCHAR) │
+  │    │ content (TEXT)    │             │    │ text (VARCHAR)    │
+  │    │ type (VARCHAR)    │             │    │ is_completed (BOOL)│
+  │    │ color (VARCHAR)   │             └────────────────────────┘
+  │    │ created_at (TZ)   │             
+  │    │ updated_at (TZ)   │             
+  └────────────────────────┘
+```
+
+### 🛡️ Restricción ON DELETE CASCADE y Optimización de Consultas
+La relación está blindada con la cláusula **`ON DELETE CASCADE`** en la clave foránea. Esto garantiza la integridad referencial del sistema: si una nota de tipo checklist es eliminada mediante un toque prolongado en la aplicación móvil, el propio motor de PostgreSQL en Neon purga de forma síncrona todas las tareas de la tabla `checklist_items` vinculadas a ese `note_id`. 
+
+**Justificación de la omisión de `note_tags`:** La tabla original de etiquetas libres se ha descartado debido a que el frontend automatiza la categorización internamente a través de la columna `type`. Mantener una tercera tabla para datos estáticos obligaría al servidor a realizar operaciones de acoplamiento (`JOIN`) costosas en tiempo de ejecución, penalizando la velocidad de respuesta de la API REST de forma innecesaria.
