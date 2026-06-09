@@ -51,3 +51,21 @@ Para asegurar un diagnóstico preciso del flujo de red y blindar el servidor con
 Siguiendo las mejores prácticas de seguridad informática, **nunca bajo ningún concepto se debe devolver el error nativo o la traza cruda de la base de datos al cliente final**. Si una consulta de SQL falla por un error de sintaxis o de claves foráneas, enviar esa excepción por red expondría la estructura interna de las tablas y los nombres de las columnas a posibles atacantes, quienes usarían esa información para planificar inyecciones SQL. 
 
 En Page & Frame, todas las interacciones de base de datos se encapsulan en bloques `try/catch`. Si ocurre una excepción, el error real se registra en los archivos de log privados del terminal del PC (`console.error`), pero de cara al exterior la API interrumpe la respuesta y devuelve un mensaje genérico y seguro blindado con el código **`500 Internal Server Error`**.
+
+
+## 5. Arquitectura de Base de Datos Relacional y Propiedades ACID
+
+Para garantizar la integridad y persistencia de las anotaciones de **Page & Frame** en la nube de Neon, la API se apoya en los principios fundamentales de los motores relacionales (PostgreSQL):
+
+### A. Propiedades ACID y Consistencia del Dominio
+Las transacciones en la base de datos están blindadas por las propiedades **ACID** (Atomicidad, Consistencia, Aislamiento y Durabilidad):
+*   **Atomicidad en el proyecto:** Al registrar una lista de tareas morada (`ChecklistNote`), la operación involucra insertar la cabecera en una tabla y sus elementos hijos en otra. La atomicidad garantiza que la transacción es un bloque único de "todo o nada". Si la inserción de un elemento del checklist falla, toda la transacción se revierte (*rollback*), impidiendo que se cree una nota vacía o incompleta que corrompa la consistencia de los datos.
+
+### B. Gestión Estratégica de Claves (Primary & Foreign Keys)
+*   **Primary Key (Generación Offline):** Como identificador único e irrepetible de cada nota, la aplicación móvil genera los IDs en el cliente utilizando marcas temporales únicas (`quick-${Date.now()}`). Esto permite que el usuario capture estímulos culturales, pensamientos e ideas de forma **offline** sin cobertura de red. El registro se guarda de forma segura con su clave primaria definitiva en `AsyncStorage` y se sincroniza síncronamente con Neon en cuanto detecta conexión.
+*   **Foreign Key y Restricción ON DELETE CASCADE:** La tabla de elementos secundarios se enlaza a la tabla madre mediante una clave foránea (`Foreign Key`). Al declarar la restricción **`ON DELETE CASCADE`** en el DDL de PostgreSQL, garantizamos que cuando el usuario ejecute un toque prolongado (*onLongPress*) en su móvil para eliminar una lista, el motor de Neon purgará de forma automática todos los elementos hijos asociados, optimizando el mantenimiento de la base de datos desde el propio motor físico.
+
+### C. Separación Lingüística: DDL vs DML
+El ciclo de desarrollo de la base de datos en Neon diferencia estrictamente dos lenguajes de interacción:
+1.  **DDL (Data Definition Language):** Comandos utilizados por el administrador para estructurar el esquema del servidor en la nube (`CREATE TABLE`, `ALTER`, `DROP`). Define los tipos de datos exactos de nuestras notas rápidas.
+2.  **DML (Data Mining/Manipulation Language):** Sentencias dinámicas que ejecuta nuestra API de Next.js en tiempo de ejecución (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) para transferir de forma síncrona los objetos JSON del frontend hacia las tuplas físicas de PostgreSQL.
