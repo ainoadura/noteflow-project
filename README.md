@@ -33,6 +33,13 @@ Page & Frame resuelve la fragmentación de las recomendaciones culturales. Permi
 - **Rendimiento:** Shopify FlashList
 - **Persistencia:** MMKV / AsyncStorage
 
+## 💻 Infraestructura del Backend
+
+El servidor de **Page & Frame** está conectado a una base de datos relacional en la nube:
+- **Motor de Base de Datos:** PostgreSQL 18
+- **Proveedor Cloud:** [Neon.tech](https://neon.tech) (Servidor alojado en la región `eu-central-1` - Frankfurt)
+- **Variables de Entorno:** Las credenciales de conexión se gestionan de forma oculta y segura en el archivo local `backend/.env.local` (excluido en el `.gitignore`).
+
 ## ⚙️ Fundamentos Técnicos de React Native
 
 En el desarrollo de **Page & Frame**, tenemos en cuenta la arquitectura interna de React Native para asegurar el máximo rendimiento.
@@ -51,8 +58,16 @@ Para la construcción de **Page & Frame**, es fundamental entender la diferencia
 - **Expo Go:** Es una aplicación pre-compilada que permite prototipar de forma inmediata escaneando un código QR. Es nuestra herramienta principal para el desarrollo ágil de la interfaz y la lógica.
 - **Development Builds:** Son binarios personalizados generados con **EAS (Expo Application Services)**. Se utilizan en proyectos profesionales cuando necesitamos incluir módulos nativos a medida (como sistemas de cámara avanzados o biometría) que no vienen por defecto en Expo Go.
 
-
 ## 📂 Estructura del Proyecto
-- `docs/`: Documentación del proyecto e ideas.
-- `app/`: Rutas principales de la aplicación (Expo Router).
-- `src/`: Código fuente incluyendo componentes, estados (store) y temas.
+
+El repositorio está organizado bajo una arquitectura **Monorepo** que independiza las dependencias y entornos de desarrollo de cada módulo:
+
+- `docs/`: Documentación teórica centralizada global (`react-native-teoria.md` y `backend-theory.md`).
+- `frontend/`: Aplicación móvil desarrollada con React Native, Expo, Zustand y TypeScript.
+  - `app/`: Enrutamiento y pantallas de la interfaz móvil (Expo Router).
+  - `src/`: Lógica core, persistencia con AsyncStorage, tipos estrictos y tokens de diseño.
+  - `components/`: Tarjetas optimizadas (`NoteCard`, `ChecklistCard`, `IdeaCard`).
+- `backend/`: API REST desarrollada con Next.js, conectada a PostgreSQL en la nube de Neon mediante sentencias SQL.
+  - `app/`: Rutas, manejadores de peticiones y endpoints del servidor web (Next App Router).
+  - `lib/`: Módulo de conexión e intermediario de consultas seguras a la base de datos (`db.ts`).
+  - `sql/`: Código fuente de las sentencias DDL de las tablas relacionales (`schema.sql`).
