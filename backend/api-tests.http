@@ -1,0 +1,51 @@
+### 1. HEALTH CHECK - Verificar que el servidor responde
+GET http://localhost:3000/api/health
+
+###
+
+### 2. POST - Crear una Nota Rápida (Borde Azul Eléctrico)
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+  "id": "quick-1718000000",
+  "title": "Recordar ver Interestelar este fin de semana",
+  "type": "standard",
+  "content": "Me la recomendó Carlos. Dice que la banda sonora es brutal.",
+  "color": "blue-electric"
+}
+
+###
+
+### 3. POST - Crear un Pensamiento (Borde Verde)
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+  "id": "idea-1718000001",
+  "title": "Idea para una novela de ciencia ficción",
+  "type": "idea",
+  "content": "Un astronauta que viaja en el tiempo a través de agujeros de gusano pero se queda atrapado en una librería.",
+  "color": "green-flash"
+}
+
+###
+
+### 4. GET - Recuperar todas las notas para la pestaña Quick Ideas
+GET http://localhost:3000/api/notes
+
+###
+
+### 5. PATCH - Modificar parcialmente una nota existente
+PATCH http://localhost:3000/api/notes/quick-1718000000
+Content-Type: application/json
+
+{
+  "title": "Interestelar (Ver con cascos obligatoriamente)",
+  "color": "blue-electric"
+}
+
+###
+
+### 6. DELETE - Eliminar una nota mediante el toque prolongado
+DELETE http://localhost:3000/api/notes/idea-1718000001

@@ -120,3 +120,64 @@ El esquema implementa una relación de **1 a Muchos (1:N)** entre la tabla `note
 La relación está blindada con la cláusula **`ON DELETE CASCADE`** en la clave foránea. Esto garantiza la integridad referencial del sistema: si una nota de tipo checklist es eliminada mediante un toque prolongado en la aplicación móvil, el propio motor de PostgreSQL en Neon purga de forma síncrona todas las tareas de la tabla `checklist_items` vinculadas a ese `note_id`. 
 
 **Justificación de la omisión de `note_tags`:** La tabla original de etiquetas libres se ha descartado debido a que el frontend automatiza la categorización internamente a través de la columna `type`. Mantener una tercera tabla para datos estáticos obligaría al servidor a realizar operaciones de acoplamiento (`JOIN`) costosas en tiempo de ejecución, penalizando la velocidad de respuesta de la API REST de forma innecesaria.
+
+## 7. Bitácora de Pruebas de Endpoints (REST Client Validation)
+
+Para validar la correcta sincronización entre la API REST de Next.js y el clúster de producción en Neon, se ha ejecutado una batería de pruebas de red utilizando la extensión REST Client. A continuación se documenta el volcado literal de las respuestas de éxito devueltas por el servidor:
+
+### A. Petición: `POST /api/notes` (Registro de Contenido)
+*   **Intención:** El usuario guarda una nota de tipo estándar desde el modal móvil.
+*   **Respuesta Real del Servidor (HTTP 201):**
+```text
+HTTP/1.1 201 Created
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: application/json
+Date: Wed, 10 Jun 2026 09:02:15 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+{
+  "id": "quick-1718000000",
+  "title": "Recordar ver Interestelar este fin de semana",
+  "content": "Me la recomendó Carlos. Dice que la banda sonora es brutal.",
+  "type": "standard",
+  "color": "blue-electric",
+  "created_at": "2026-06-10T09:02:14.218Z",
+  "updated_at": "2026-06-10T09:02:14.218Z"
+}
+```
+
+### B. Petición: `GET /api/notes` (Indexación del Tablón)
+*   **Intención:** Hidratar la lista de alto rendimiento `FlashList` en la pestaña `/ideas`.
+*   **Respuesta Real del Servidor (HTTP 200):**
+```text
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: application/json
+Date: Wed, 10 Jun 2026 09:02:58 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+[
+  {
+    "id": "quick-1718000000",
+    "title": "Recordar ver Interestelar este fin de semana",
+    "content": "Me la recomendó Carlos. Dice que la banda sonora es brutal.",
+    "type": "standard",
+    "color": "blue-electric",
+    "created_at": "2026-06-10T09:02:14.218Z",
+    "updated_at": "2026-06-10T09:02:14.218Z"
+  }
+]
+```
+
+### C. Petición: `DELETE /api/notes/[id]` (Purga de Registro)
+*   **Intención:** El usuario confirma la eliminación definitiva mediante un toque largo.
+*   **Respuesta Real del Servidor (HTTP 204):**
+```text
+HTTP/1.1 204 No Content
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+Date: Wed, 10 Jun 2026 09:03:15 GMT
+Connection: close
+```
+*(Cuerpo vacío devuelto de forma nativa por el servidor de Next.js acorde a las especificaciones del enunciado).*
