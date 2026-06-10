@@ -49,3 +49,42 @@ Content-Type: application/json
 
 ### 6. DELETE - Eliminar una nota mediante el toque prolongado
 DELETE http://localhost:3000/api/notes/idea-1718000001
+
+
+### 7. POST - Crear una Nota tipo Checklist (Contorno Morado)
+POST http://localhost:3000/api/notes
+Content-Type: application/json
+
+{
+  "id": "chk-999999",
+  "title": "Lista de episodios de Shogun",
+  "type": "checklist",
+  "content": "Temporada 1 en Disney+",
+  "color": "checklist-purple"
+}
+
+###
+
+### 8. POST - Añadir un ítem (Capítulo 1) a la Checklist creada
+POST http://localhost:3000/api/notes/chk-999999/checklist-items
+Content-Type: application/json
+
+{
+  "id": "item-111111",
+  "text": "Episodio 1: Anjin"
+}
+
+###
+
+### 9. PATCH - Marcar el Capítulo 1 como completado (Barra de progreso)
+PATCH http://localhost:3000/api/checklist-items/item-111111
+Content-Type: application/json
+
+{
+  "is_completed": true
+}
+
+###
+
+### 10. GET - Ver el LEFT JOIN mágico (Trae la lista con sus ítems dentro)
+GET http://localhost:3000/api/notes

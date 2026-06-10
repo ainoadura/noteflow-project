@@ -13,10 +13,20 @@ const noteSchema = z.object({
 
 export async function GET() {
   try {
-    const notes = await query('SELECT * FROM notes ORDER BY created_at DESC');
+    const sqlQuery = `
+      SELECT 
+        n.*,
+        COALESCE(json_agg(ci.*) FILTER (WHERE ci.id IS NOT NULL), '[]') as items
+      FROM notes n
+      LEFT JOIN checklist_items ci ON n.id = ci.note_id
+      GROUP BY n.id
+      ORDER BY n.created_at DESC;
+    `;
+    
+    const notes = await query(sqlQuery);
     return NextResponse.json(notes, { status: 200 });
   } catch (error) {
-    console.error('Database GET Error:', error);
+    console.error('Database GET JSON_AGG Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

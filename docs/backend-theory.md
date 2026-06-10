@@ -181,3 +181,77 @@ Date: Wed, 10 Jun 2026 09:03:15 GMT
 Connection: close
 ```
 *(Cuerpo vacío devuelto de forma nativa por el servidor de Next.js acorde a las especificaciones del enunciado).*
+
+
+## 8. Endpoints Relacionales Avanzados y Agregación JSON (Punto 10)
+
+Para dar soporte a la gestión interactiva de listas de tareas completables (`ChecklistNote`), se han implementado endpoints relacionales que explotan el potencial de las cláusulas de acoplamiento de PostgreSQL (`LEFT JOIN`) combinadas con funciones de agregación JSON nativas en el motor de Neon.
+
+### A. Petición: `POST /api/notes/[id]/checklist-items` (Inyección de Sub-recurso)
+*   **Intención:** El usuario añade un capítulo o tarea a una lista desde la app móvil.
+*   **Respuesta Real de Neon (HTTP 201):**
+```text
+HTTP/1.1 201 Created
+content-type: application/json
+
+{
+  "id": "item-111111",
+  "note_id": "chk-999999",
+  "text": "Episodio 1: Anjin",
+  "is_completed": false
+}
+```
+
+### B. Petición: `PATCH /api/checklist-items/[itemId]` (Mutación de Estado Binario)
+*   **Intención:** Marcar o desmarcar un ítem para recalcular la barra de progreso morada.
+*   **Respuesta Real de Neon (HTTP 200):**
+```text
+HTTP/1.1 200 OK
+content-type: application/json
+
+{
+  "id": "item-111111",
+  "note_id": "chk-999999",
+  "text": "Episodio 1: Anjin",
+  "is_completed": true
+}
+```
+
+### C. La Joya de la Corona: El Resultado del `LEFT JOIN` y `json_agg`
+Al ejecutar la petición unificada de lectura general (`GET /api/notes`), el backend no realiza múltiples consultas lentas en bucle. En su lugar, ejecuta una única consulta relacional estructurada con un `LEFT JOIN` hacia `checklist_items` y agrupa los sub-recursos en un array JSON virtual. 
+
+A continuación se muestra el JSON real devuelto por la API REST que nutre de forma instantánea a las tarjetas del frontend móvil:
+
+```json
+[
+  {
+    "id": "chk-999999",
+    "title": "Lista de episodios de Shogun",
+    "content": "Temporada 1 en Disney+",
+    "type": "checklist",
+    "color": "checklist-purple",
+    "created_at": "2026-06-10T09:32:08.969Z",
+    "updated_at": "2026-06-10T09:32:08.969Z",
+    "items": [
+      {
+        "id": "item-111111",
+        "note_id": "chk-999999",
+        "text": "Episodio 1: Anjin",
+        "is_completed": true
+      }
+    ]
+  }
+]
+```
+
+## 9. Anatomía de Acoplamientos Relacionales: INNER JOIN vs. LEFT JOIN
+
+Para la extracción de conjuntos de datos combinados en motores PostgreSQL, es fundamental discriminar el comportamiento y la teoría de conjuntos detrás de las cláusulas de acoplamiento:
+
+### A. LEFT JOIN (Acoplamiento Externo Izquierdo)
+*   **Comportamiento:** Devuelve **todas las filas** de la tabla izquierda (tabla origen), junto con las filas coincidentes de la tabla derecha. Si no existe ninguna coincidencia en la tabla derecha, el motor relacional rellena esos campos con valores `NULL`.
+*   **Cuándo usarlo en Page & Frame:** Es la opción obligatoria para renderizar el tablón unificado de la pestaña `/ideas`. Necesitamos que la API devuelva **todas las notas y pensamientos** (tabla izquierda `notes`), independientemente de si tienen tareas hijas o no. Si usáramos otra cláusula, las notas estándar o los pensamientos verdes (que nacen sin tareas) desaparecerían del mapa por no tener registros en `checklist_items`.
+
+### B. INNER JOIN (Acoplamiento Interno)
+*   **Comportamiento:** Devuelve **única y exclusivamente las filas que tienen una coincidencia exacta** en ambas tablas. Si una fila de la tabla izquierda no encuentra un registro relacionado con su misma clave en la tabla derecha, esa tupla queda completamente excluida del resultado de la consulta.
+*   **Cuándo usarlo en Page & Frame:** Se utilizaría en un módulo de auditoría o analítica interna del servidor. Por ejemplo, si el frontend necesitara pintar una pantalla exclusiva llamada *"Mis listas activas con subtareas asignadas"*, un `INNER JOIN` entre `notes` y `checklist_items` descartaría automáticamente los pensamientos y las notas estándar aisladas, devolviendo solo las checklists que poseen como mínimo una tarea física registrada en la base de datos de Neon.
