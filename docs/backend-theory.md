@@ -183,7 +183,7 @@ Connection: close
 *(Cuerpo vacío devuelto de forma nativa por el servidor de Next.js acorde a las especificaciones del enunciado).*
 
 
-## 8. Endpoints Relacionales Avanzados y Agregación JSON (Punto 10)
+## 8. Endpoints Relacionales Avanzados y Agregación JSON
 
 Para dar soporte a la gestión interactiva de listas de tareas completables (`ChecklistNote`), se han implementado endpoints relacionales que explotan el potencial de las cláusulas de acoplamiento de PostgreSQL (`LEFT JOIN`) combinadas con funciones de agregación JSON nativas en el motor de Neon.
 
@@ -255,3 +255,38 @@ Para la extracción de conjuntos de datos combinados en motores PostgreSQL, es f
 ### B. INNER JOIN (Acoplamiento Interno)
 *   **Comportamiento:** Devuelve **única y exclusivamente las filas que tienen una coincidencia exacta** en ambas tablas. Si una fila de la tabla izquierda no encuentra un registro relacionado con su misma clave en la tabla derecha, esa tupla queda completamente excluida del resultado de la consulta.
 *   **Cuándo usarlo en Page & Frame:** Se utilizaría en un módulo de auditoría o analítica interna del servidor. Por ejemplo, si el frontend necesitara pintar una pantalla exclusiva llamada *"Mis listas activas con subtareas asignadas"*, un `INNER JOIN` entre `notes` y `checklist_items` descartaría automáticamente los pensamientos y las notas estándar aisladas, devolviendo solo las checklists que poseen como mínimo una tarea física registrada en la base de datos de Neon.
+
+
+## 10. Diagrama Entidad-Relación (DER) del Esquema de Datos
+
+La arquitectura de la base de datos relacional en Neon está compuesta por tres entidades principales indexadas mediante claves foráneas y restricciones de integridad referencial:
+
+```text
+  ┌──────────────────────────────────┐
+  │              NOTES               │
+  ├──────────────────────────────────┤
+  │ id (VARCHAR PRIMARY KEY)         │◄───┐
+  │ title (VARCHAR)                  │    │
+  │ content (TEXT)                   │    │
+  │ type (VARCHAR CHECK)             │    │
+  │ color (VARCHAR)                  │    │
+  │ created_at (TIMESTAMPTZ)         │    │
+  │ updated_at (TIMESTAMPTZ)         │    │
+  └──────────────────────────────────┘    │
+                   ▲                      │
+                   │ (1:N)                │ (1:N)
+                   │                      │
+  ┌──────────────────────────────────┐    │ ┌──────────────────────────────────┐
+  │         CHECKLIST_ITEMS          │    │ │            NOTE_TAGS             │
+  ├──────────────────────────────────┤    │ ├──────────────────────────────────┤
+  │ id (VARCHAR PRIMARY KEY)         │    └─│ id (VARCHAR PRIMARY KEY)         │
+  │ note_id (VARCHAR FOREIGN KEY) ───┘      │ note_id (VARCHAR FOREIGN KEY) ───┘
+  │ text (VARCHAR)                   │      │ tag (VARCHAR)                    │
+  │ is_completed (BOOLEAN)           │      └──────────────────────────────────┘
+  └──────────────────────────────────┘
+```
+
+### Relaciones y Restricciones del Modelo:
+1.  **`notes` a `checklist_items` (Relación 1 a Muchos / 1:N)**: Una fila de la entidad raíz `notes` puede albergar múltiples subtareas hijas. Cada registro en `checklist_items` depende existencialmente de su nota contenedora mediante el atributo `note_id`.
+2.  **`notes` a `note_tags` (Relación 1 a Muchos / 1:N)**: Estructura diseñada para categorizar el contenido. Una nota es susceptible de poseer múltiples etiquetas dinámicas indexadas por la clave foránea `note_id`.
+3.  **Cláusula ON DELETE CASCADE**: Aplicada de forma estricta en ambas restricciones de clave externa. Garantiza que la eliminación física de un registro en `notes` desencadene de forma atómica y automática la purga de sus ítems y etiquetas vinculadas en el motor PostgreSQL, mitigando la persistencia de registros huérfanos y manteniendo la consistencia e integridad referencial del sistema.

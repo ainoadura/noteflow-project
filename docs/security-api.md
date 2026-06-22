@@ -1,75 +1,69 @@
-# API Security, SQL Injection Mitigation, and Environment Secrets
+# Seguridad en la API: Vectores de Ataque y Protección de Secretos
 
-This document explains the core security principles implemented in **Page & Frame** to safeguard data persistence, prevent database manipulation, and shield infrastructure credentials from public exposure.
+## 1. Inyección SQL (SQL Injection)
 
----
+La inyección SQL es una de las vulnerabilidades más críticas en aplicaciones web y APIs. Ocurre cuando los datos proporcionados por el usuario se concatenan directamente dentro de una consulta SQL de texto plano sin ningún tipo de filtrado o saneamiento. Esto permite a un atacante inyectar comandos SQL maliciosos que el motor de la base de datos ejecutará como si fuesen instrucciones legítimas.
 
-## 1. What is SQL Injection? (With a Concrete Example)
-
-**SQL Injection (SQLi)** is a critical vulnerability that occurs when untrusted user input is directly concatenated into a database query string instead of being treated as isolated data. This allows an attacker to manipulate the query's structural logic and execute unauthorized SQL commands on the server.
-
-### ❌ The Vulnerable Scenario (String Concatenation)
-If our backend combined the title field from the mobile app's quick-note form using direct string linkers (`+` or template literals), the code would look like this:
+### Ejemplo Práctico de Vulnerabilidad (Código No Seguro)
+Imaginemos que para buscar una nota por su título en nuestra API concatenamos directamente el cuerpo de la petición (`request.json()`):
 
 ```typescript
-// HIGHLY VULNERABLE CODE (DO NOT USE)
-const userInput = req.body.title; 
-const queryText = "SELECT * FROM notes WHERE title = '" + userInput + "'";
+// VULNERABLE: Concatenación directa de strings
+const userTitle = body.title; 
+const query = `SELECT * FROM notes WHERE title = '${userTitle}'`;
+const result = await db.query(query);
 ```
 
-### 🎯 The Attack Vector Example
-A malicious actor could input the following payload into the title text input of the mobile form:
+Si un usuario malintencionado envía en el campo `title` el siguiente texto (vector de ataque):
 `'; DROP TABLE notes;--`
 
-When the server processes the request, the query string collapses into a destructive execution block:
+La consulta final que compila y ejecuta PostgreSQL se convierte en:
 ```sql
 SELECT * FROM notes WHERE title = ''; DROP TABLE notes;--'
 ```
 
-#### How the database breaks:
-1. `'` closes the intended literal string early.
-2. `;` terminates the first `SELECT` statement cleanly.
-3. **`DROP TABLE notes;`** injects a fresh, high-privilege structural command that deletes our entire notes repository instantly.
-4. `--` turns the remaining trailing single quote into an inofensive database comment, preventing SQL syntax crashes.
+*   **Consecuencia:** El carácter `'` cierra prematuramente la condición de búsqueda, el `;` finaliza la primera instrucción, y ejecuta inmediatamente un comando destructivo (`DROP TABLE notes;`). El operador `--` convierte el resto de la consulta original en un comentario, anulando cualquier error de sintaxis y destruyendo la base de datos por completo.
 
 ---
 
-## 2. How Parameterized Queries Prevent Injection
+## 2. Prevención mediante Consultas Parametrizadas
 
-**Parameterized Queries** (also known as Prepared Statements) completely eliminate SQL injection vectors by separating the query structure from the actual variable data.
+Las consultas parametrizadas (o *Prepared Statements*) resuelven este vector de ataque separando estrictamente la **estructura lógica de la consulta** de los **datos introducidos por el usuario**. 
 
-### 🛡️ The Secure Implementation (Our Engine)
-In **Page & Frame**, our unified database gateway (`backend/lib/db.ts`) forwards parameters to Neon by isolating the code from the literals:
+### Ejemplo de Implementación Segura en Page & Frame
+En nuestra API, utilizamos este enfoque enviando marcadores de posición (`$1`, `$2`, etc.) junto con un array independiente de valores:
 
 ```typescript
-// IMMUNE CODE (Parameterized Approach)
-const queryText = "SELECT * FROM notes WHERE title = \$1";
-await sql.query(queryText, [userInput]);
+// SEGURO: Consulta parametrizada con marcadores de posición
+const query = "SELECT * FROM notes WHERE title = \$1";
+await db.query(query, [body.title]);
 ```
 
-### 🧠 How It Works Under the Hood
-1. **Compilation Phase:** The Next.js API sends the command structure (`SELECT ... WHERE title = \$1`) to the PostgreSQL engine in the cloud first. Neon pre-compiles this execution plan, locking its logical tree so no new keywords (`DROP`, `UNION`, `OR`) can be introduced.
-2. **Execution Phase:** The isolated array containing the user data (`['; DROP TABLE notes;--']`) is sent over a secondary parameter highway.
-3. **Neutralization:** The database engine treats the payload **strictly as a plain text string literal** matching the column type. The system is 100% safe because the malicious script gets stored safely in the database cell as a literal string title, instead of running as code.
+### ¿Cómo lo previene el motor de la base de datos?
+Cuando el backend envía la consulta parametrizada a Neon (PostgreSQL):
+1. El motor precompila el SQL (`SELECT * FROM notes WHERE title = $1`) y define de antemano el plano de ejecución exacto de la consulta.
+2. Posteriormente, el valor de `body.title` se inyecta en el marcador `$1`.
+3. Incluso si el parámetro contiene instrucciones como `DROP TABLE`, el motor lo trata **estrictamente como una cadena de texto literal (un dato)** dentro de la condición `WHERE`, nunca como código ejecutable. La base de datos simplemente buscará una nota cuyo título sea literalmente `'; DROP TABLE notes;--`, abortando el ataque por completo.
 
 ---
 
-## 3. Environment Variables and Secret Protection
+## 3. Gestión Segura de Credenciales y Variables de Entorno
 
-A **Connection String** is a powerful URI block (`postgresql://owner:password@cluster.neon.tech/db`) that provides absolute administrative entry to the database engine. If these credentials fall into the wrong hands, attackers could extract, corrupt, or erase the entire system.
+El *Connection String* de PostgreSQL (como el de Neon) contiene el usuario, el host, el puerto y la **contraseña maestra** de acceso a toda la base de datos. Bajo ninguna circunstancia este string de conexión debe estar embebido directamente en el código fuente de la aplicación.
 
-### ❌ Why Hardcoding Credentials is Fatal
-Embedding the connection string inside production code files (like `db.ts`) is a massive security hazard. Since version control systems like **GitHub** keep public histories of every text line, anyone browsing the repository can instantly harvest the password. Even inside mobile app binaries, compiled strings can be unpacked via basic reverse-engineering (`.apk` or `.ipa` decompilation) in minutes.
+### Riesgos de la Exposición del Código (Hardcoding)
+*   **Fugas en Repositorios:** Si la cadena de conexión se escribe directamente en el código y el proyecto se sube a un repositorio de Git (Público o Privado), cualquier persona con acceso al historial de confirmaciones (*commits*) tendrá control absoluto sobre los datos.
+*   **Inflexibilidad:** Hardcodear credenciales impide cambiar entre entornos de desarrollo, pruebas y producción sin tener que refactorizar y recompilar la aplicación.
 
-### 🛡️ Secure Solution: The `.env.local` Architecture
-To mitigate this risk, **Page & Frame** implements a strict server-side Environment Variable strategy using Next.js native `.env.local` layers:
+### Solución mediante Variables de Entorno (`.env.local`)
+Para mitigar esto, externalizamos las credenciales confidenciales utilizando variables de entorno en el servidor de Next.js:
 
-1. **Local Isolation:** The secret URI key is assigned locally to the environment process inside `backend/.env.local`:
-   ```text
-   DATABASE_URL=postgresql://neondb_owner:PASSWORD@ep-gentle-cake.neon.tech/neondb
-   ```
-2. **Git Shielding:** The global and backend `.gitignore` rules actively block this file from being indexed or tracked by Git. It remains safely locked in the developer's machine and production cloud containers.
-3. **Public Template:** A generic `backend/.env.example` file is pushed to GitHub with blank fields, acting as an implementation guide for evaluators without exposing real passwords:
-   ```text
-   DATABASE_URL=
-   ```
+1.  **Aislamiento Local (`.env.local`):** Almacena de forma exclusiva la credenciales del entorno de desarrollo local. Este archivo **nunca** se sube al control de versiones de Git gracias a estar explícitamente añadido en el archivo `.gitignore`.
+    ```env
+    DATABASE_URL=postgres://alex:mi_password_secreta@ep-cool-stream-123456.eu-central-1.aws.neon.tech/neondb
+    ```
+2.  **Plantilla Pública (`.env.example`):** Actúa como un molde limpio y descriptivo para que otros desarrolladores del equipo sepan qué variables necesita el backend para funcionar, manteniendo los valores completamente vacíos o con ejemplos genéricos.
+    ```env
+    DATABASE_URL=
+    ```
+3.  **Consumo en Código:** En nuestro módulo `lib/db.ts`, el backend extrae el secreto dinámicamente mediante el objeto global del entorno de ejecución de Node.js (`process.env.DATABASE_URL`), garantizando que las contraseñas reales queden totalmente invisibles dentro del repositorio.
