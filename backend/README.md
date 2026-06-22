@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NoteFlow API 🚀
 
-## Getting Started
+Este es el servidor backend para el proyecto **NoteFlow** (Page & Frame), una solución robusta y escalable diseñada bajo el patrón cliente-servidor. La API actúa como guardián de la lógica de negocio, validando los datos y gestionando de forma segura la persistencia en un clúster relacional de PostgreSQL administrado en la nube.
 
-First, run the development server:
+## 📋 Características principales
+*   **API RESTful**: Endpoints modulares mapeados bajo semántica HTTP estricta.
+*   **Seguridad Activa**: Mitigación de vectores de ataque mediante consultas parametrizadas (anti SQL Injection).
+*   **Persistencia Robusta**: Esquema relacional con integridad referencial y borrado en cascada en Neon.
+*   **Validación de Esquemas**: Limpieza y tipado estricto de payloads entrantes mediante Zod.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🛠️ Tecnologías y Arquitectura
+
+*   **Framework:** Next.js (App Router / API Routes)
+*   **Lenguaje:** TypeScript
+*   **Base de Datos:** PostgreSQL (Neon Serverless)
+*   **Validador:** Zod
+*   **Autenticación:** JWT (JSON Web Tokens)
+
+---
+
+## 🔒 Variables de Entorno Requeridas
+
+Para ejecutar este servidor localmente, debes crear un archivo `.env.local` en la raíz de este directorio con las siguientes llaves:
+
+```env
+DATABASE_URL=postgres://usuario:password@host.neon.tech/neondb
+JWT_SECRET=tu_clave_secreta_super_segura_para_firmar_tokens
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+*(Nota: Una plantilla sin credenciales reales se encuentra disponible en el archivo `.env.example`)*.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 💻 Instalación y Configuración Local
 
-## Learn More
+1.  **Navegar al directorio del backend:**
+    ```bash
+    cd backend
+    ```
+2.  **Instalar todas las dependencias del proyecto:**
+    ```bash
+    npm install
+    ```
+3.  **Ejecutar el servidor en entorno de desarrollo:**
+    ```bash
+    npm run dev
+    ```
+    *El servidor estará escuchando activamente en: `http://localhost:3000`*
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🌐 Catálogo de Endpoints (API Reference)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Autenticación (Rutas Públicas)
+*   **`POST /api/auth/register`**
+    *   **Body esperado:** `{ "email": "usuario@ejemplo.com", "password": "mipasswordsegura" }`
+    *   **Respuesta (201 Created):** `{ "message": "Usuario registrado con éxito" }`
+*   **`POST /api/auth/login`**
+    *   **Body esperado:** `{ "email": "usuario@ejemplo.com", "password": "mipasswordsegura" }`
+    *   **Respuesta (200 OK):** `{ "token": "eyJhbGciOi..." }`
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Gestión de Notas (Requiere Header `Authorization: Bearer <token>`)
+*   **`GET /api/notes`**
+    *   **Respuesta (200 OK):** Devuelve un array con todas las notas unificadas, realizando una agregación JSON (`LEFT JOIN`) para incluir sus ítems de checklist correspondientes de forma estructurada.
+*   **`POST /api/notes`**
+    *   **Body esperado:** `{ "title": "Nueva Nota", "type": "standard", "content": "Texto descriptivo" }`
+    *   **Respuesta (201 Created):** Devuelve el objeto de la nota recién guardado con su ID único asignado por el servidor.
+*   **`PATCH /api/notes/[id]`**
+    *   **Body esperado:** Payload con modificaciones parciales (`title`, `content`, `color`, etc.).
+    *   **Respuesta (200 OK):** Objeto de la nota actualizado con los nuevos cambios.
+*   **`DELETE /api/notes/[id]`**
+    *   **Respuesta (204 No Content):** Borrado físico en la base de datos. Gracias a la restricción `ON DELETE CASCADE`, elimina automáticamente los ítems de checklist y etiquetas dependientes de esta nota sin dejar registros huérfanos.
