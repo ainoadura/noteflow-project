@@ -2,6 +2,13 @@
 
 Una aplicación móvil moderna construida con **React Native** y **Expo** para gestionar y organizar tu universo personal de libros, películas y series.
 
+## 🌐 Despliegue en Producción
+
+La API se encuentra desplegada y operativa en los servidores cloud de Vercel. Puedes acceder al endpoint principal de notas a través del siguiente enlace público:
+
+🔗 **URL de producción:** [NoteFlow Project API](https://noteflow-project.vercel.app/api)
+
+
 ## 📂 Documentación
 Consulta los detalles del proyecto en los siguientes documentos:
 - [Definición de la Idea](docs/idea.md): Concepto, usuarios y funcionalidades.

@@ -1,5 +1,5 @@
 // src/lib/api.ts
-const BASE_URL = 'http://192.168.100.37:3000/api';
+const BASE_URL = 'https://noteflow-project.vercel.app/api';
 
 export async function getNotes(): Promise<unknown[]> {
   try {
