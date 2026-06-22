@@ -6,7 +6,7 @@ Una aplicación móvil moderna construida con **React Native** y **Expo** para g
 
 La API se encuentra desplegada y operativa en los servidores cloud de Vercel. Puedes acceder al endpoint principal de notas a través del siguiente enlace público:
 
-🔗 **URL de producción:** [NoteFlow Project API](https://noteflow-project.vercel.app/api)
+🔗 **URL de producción:** [NoteFlow Project API](https://noteflow-project.vercel.app/api/notes)
 
 
 ## 📂 Documentación
