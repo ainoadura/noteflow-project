@@ -1,19 +1,17 @@
 // app/_layout.tsx
-import { useEffect } from 'react'; // 1. Importamos useEffect de React
+import { useEffect } from 'react'; 
 import { Stack } from 'expo-router';
 import { GluestackUIProvider } from '../components/ui/gluestack-ui-provider';
 import { useTheme } from '../src/constants/theme';
 import { StatusBar } from 'expo-status-bar';
-import { useNotesStore } from '../src/store/noteStore'; // 2. Importamos tu store de Zustand
+import { useNotesStore } from '../src/store/noteStore'; 
 import '../global.css'; 
 
 export default function RootLayout() {
   const { colors } = useTheme();
   
-  // 3. Traemos la función de carga que conecta con el backend de Next.js
   const fetchNotes = useNotesStore((state) => state.fetchNotes);
 
-  // 4. Disparamos la petición a la base de datos de Neon al abrir la app
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
