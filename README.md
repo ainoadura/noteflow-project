@@ -17,6 +17,7 @@ Consulta los detalles del proyecto en los siguientes documentos:
 - [Teoría de React Native](docs/react-native-theory.md): Conceptos clave, Metro Bundler y entornos de desarrollo.
 - [Teoría del Backend y API REST](docs/backend-theory.md): Patrón cliente-servidor, seguridad en bases de datos y códigos de estado HTTP.
 - [Seguridad de la API e Inyección SQL](docs/security-api.md): Mitigación de inyecciones, consultas parametrizadas y variables de entorno protegidas.
+- [Flujo de Subida y Renderizado de Imágenes](docs/image-upload-flow.md): Desglose técnico del flujo seguro de archivos desde el cliente móvil hacia AWS S3 y el sistema de caché nativo.
 
 ## 📋 Tablero de Trabajo
 Puedes seguir el progreso en tiempo real aquí: [Enlace a mi Trello](https://trello.com/invite/b/6a01af6815b98b29c282adfa/ATTIaccbbc0bf941684d94e39fc1cae8468724621184/noteflow-project)
