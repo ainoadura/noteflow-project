@@ -7,6 +7,7 @@ import { useNotesStore } from '../../src/store/noteStore';
 import { useTheme } from '../../src/constants/theme';
 import { Note } from '../../src/types'; 
 import NoteCard from '../../components/items/NoteCard';
+import ImageSelector from '../../components/ImageSelector';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -17,6 +18,56 @@ export default function HomeScreen() {
   const fontSizeM = typography?.sizes?.m || 16;
 
   const activeNotes = notes.filter((n) => !archivedIds.includes(n.id));
+
+  const handleImageSelected = async (localUri: string): Promise<void> => {
+    try {
+      console.log('Local URI captured in Home:', localUri);
+      
+      const response = await fetch('http://192.168.100.37', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: 'uploaded-photo.jpg',
+          contentType: 'image/jpeg',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
+
+      const data = await response.json() as { signedUrl: string; publicUrl: string };
+      console.log('Presigned URL received:', data.signedUrl);
+
+      const blobResponse = await fetch(localUri);
+      const blob = await blobResponse.blob();
+
+      const uploadResponse = await fetch(data.signedUrl, {
+        method: 'PUT',
+        body: blob,
+        headers: {
+          'Content-Type': 'image/jpeg',
+        },
+      });
+
+      if (uploadResponse.ok) {
+        Alert.alert('Success', 'Profile image uploaded to AWS S3 successfully!');
+        console.log('Public cloud resource URL:', data.publicUrl);
+      } else {
+        throw new Error('Failed to transfer binary data to AWS S3 bucket');
+      }
+
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Upload process error:', error.message);
+        Alert.alert('Upload Error', error.message);
+      } else {
+        Alert.alert('Upload Error', 'An unexpected network transport error occurred.');
+      }
+    }
+  };
 
   const handleLongPressList = (listId: string, listName: string) => {
     if (listId === 'list-all') return;
@@ -44,6 +95,11 @@ export default function HomeScreen() {
             Page & Frame
           </Text>
         </View>
+
+        <View style={[styles.selectorContainer, { paddingHorizontal: spacing.m, marginBottom: spacing.m }]}>
+          <ImageSelector onImageSelected={handleImageSelected} buttonColor={colors.primary} />
+        </View>
+
 
         <ScrollView 
           contentContainerStyle={{ paddingBottom: 140 }} 
@@ -103,6 +159,11 @@ const styles = StyleSheet.create({
   title: { 
     fontWeight: 'bold' 
   },
+  selectorContainer: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginTop: 4,
+  },
   listSection: { 
     marginBottom: 24 
   },
@@ -122,3 +183,4 @@ const styles = StyleSheet.create({
     textAlign: 'center' 
   }
 });
+
